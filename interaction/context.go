@@ -25,6 +25,21 @@ type Response struct {
 	TTS        bool
 }
 
+func splitCustomID(cid string) (string, string) {
+	parts := strings.SplitN(cid, ":", 2)
+	if len(parts) == 2 {
+		return parts[0], parts[1]
+	}
+	return parts[0], ""
+}
+
+func ephemeralFlag(ephemeral bool) types.MessageFlag {
+	if ephemeral {
+		return types.MessageFlagEphemeral
+	}
+	return 0
+}
+
 type Context struct {
 	ctx          context.Context
 	Interaction  *types.Interaction
@@ -60,15 +75,10 @@ func (c *Context) Defer(ephemeral bool) error {
 	}
 	c.deferred.Store(true)
 
-	var flags types.MessageFlag
-	if ephemeral {
-		flags = types.MessageFlagEphemeral
-	}
-
 	res := types.InteractionResponse{
 		Type: types.CallbackTypeDeferredChannelMessageWithSource,
 		Data: &types.InteractionResponseData{
-			Flags: flags,
+			Flags: ephemeralFlag(ephemeral),
 		},
 	}
 
@@ -105,10 +115,7 @@ func (c *Context) DeferUpdate() error {
 }
 
 func (c *Context) Reply(res Response) error {
-	var flags types.MessageFlag
-	if res.Ephemeral {
-		flags = types.MessageFlagEphemeral
-	}
+	flags := ephemeralFlag(res.Ephemeral)
 
 	if c.deferred.Load() {
 		if c.restClient == nil {
@@ -151,10 +158,7 @@ func (c *Context) Reply(res Response) error {
 }
 
 func (c *Context) UpdateOriginal(res Response) error {
-	var flags types.MessageFlag
-	if res.Ephemeral {
-		flags = types.MessageFlagEphemeral
-	}
+	flags := ephemeralFlag(res.Ephemeral)
 
 	if c.deferred.Load() {
 		if c.restClient == nil {
@@ -239,12 +243,8 @@ func (c *Context) ComponentCustomID() string {
 }
 
 func (c *Context) ComponentParam() string {
-	id := c.ComponentCustomID()
-	parts := strings.SplitN(id, ":", 2)
-	if len(parts) == 2 {
-		return parts[1]
-	}
-	return ""
+	_, param := splitCustomID(c.ComponentCustomID())
+	return param
 }
 
 func (c *Context) User() *types.User {
@@ -276,15 +276,11 @@ func (c *Context) Followup(res Response) (*types.Message, error) {
 	if c.restClient == nil {
 		return nil, ErrNoRestClient
 	}
-	var flags types.MessageFlag
-	if res.Ephemeral {
-		flags = types.MessageFlagEphemeral
-	}
 	return c.restClient.CreateFollowupMessage(c.Context(), c.Interaction.AppID, c.Interaction.Token, rest.MessagePayload{
 		Content:    res.Content,
 		Embeds:     res.Embeds,
 		Components: res.Components,
-		Flags:      flags,
+		Flags:      ephemeralFlag(res.Ephemeral),
 		TTS:        res.TTS,
 	})
 }

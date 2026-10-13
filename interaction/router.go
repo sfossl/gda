@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -100,7 +99,7 @@ func (r *Router) findHandler(in *types.Interaction) Handler {
 		if h, ok := r.components[cid]; ok {
 			return h
 		}
-		prefix := strings.SplitN(cid, ":", 2)[0]
+		prefix, _ := splitCustomID(cid)
 		if h, ok := r.components[prefix]; ok {
 			return h
 		}
@@ -110,7 +109,7 @@ func (r *Router) findHandler(in *types.Interaction) Handler {
 		if h, ok := r.modals[cid]; ok {
 			return h
 		}
-		prefix := strings.SplitN(cid, ":", 2)[0]
+		prefix, _ := splitCustomID(cid)
 		if h, ok := r.modals[prefix]; ok {
 			return h
 		}
