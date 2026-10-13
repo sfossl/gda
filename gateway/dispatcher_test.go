@@ -107,3 +107,10 @@ func TestEventDispatcherContextCancel(t *testing.T) {
 	}
 }
 
+func TestEventDispatcherInitialConcurrency(t *testing.T) {
+	d := NewEventDispatcher(1)
+	if cap(d.sem) != 1 {
+		t.Fatalf("expected semaphore capacity 1, got %d", cap(d.sem))
+	}
+}
+

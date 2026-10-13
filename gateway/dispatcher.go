@@ -16,10 +16,14 @@ type EventDispatcher struct {
 	sem       chan struct{}
 }
 
-func NewEventDispatcher() *EventDispatcher {
+func NewEventDispatcher(concurrency ...int) *EventDispatcher {
+	limit := 1024
+	if len(concurrency) > 0 && concurrency[0] > 0 {
+		limit = concurrency[0]
+	}
 	return &EventDispatcher{
 		listeners: make(map[types.EventName][]RawHandler),
-		sem:       make(chan struct{}, 1024),
+		sem:       make(chan struct{}, limit),
 	}
 }
 
