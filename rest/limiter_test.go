@@ -93,3 +93,32 @@ func TestRateLimiterConcurrent(t *testing.T) {
 	wg.Wait()
 }
 
+func TestRateLimiterUpdateWithRetryAfter(t *testing.T) {
+	limiter := NewRateLimiter()
+	ctx := context.Background()
+	route := "POST:/channels/5/messages"
+
+	limiter.UpdateWithRetryAfter(route, 0.05, false)
+
+	start := time.Now()
+	if err := limiter.Acquire(ctx, route); err != nil {
+		t.Fatalf("acquire error: %v", err)
+	}
+	elapsed := time.Since(start)
+
+	if elapsed < 40*time.Millisecond {
+		t.Fatalf("expected delay >= 40ms, got %v", elapsed)
+	}
+
+	limiter.UpdateWithRetryAfter("any_route", 0.05, true)
+	start = time.Now()
+	if err := limiter.Acquire(ctx, "POST:/channels/6/messages"); err != nil {
+		t.Fatalf("acquire error: %v", err)
+	}
+	elapsed = time.Since(start)
+
+	if elapsed < 40*time.Millisecond {
+		t.Fatalf("expected global delay >= 40ms, got %v", elapsed)
+	}
+}
+

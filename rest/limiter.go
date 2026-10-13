@@ -138,6 +138,9 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 		l.routeToHash[routeKey] = bucketHash
 		if existing, ok := l.buckets[routeKey]; ok {
 			l.buckets[bucketHash] = existing
+			if routeKey != bucketHash {
+				delete(l.buckets, routeKey)
+			}
 		}
 		bKey = bucketHash
 		l.mu.Unlock()
@@ -168,5 +171,20 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 			b.resetTime = time.Now().Add(time.Duration(retryAfter * float64(time.Second)))
 		}
 	}
+}
+
+func (l *RateLimiter) UpdateWithRetryAfter(routeKey string, retryAfter float64, isGlobal bool) {
+	reset := time.Now().Add(time.Duration(retryAfter * float64(time.Second)))
+	if isGlobal {
+		l.globalMu.Lock()
+		l.globalReset = reset
+		l.globalMu.Unlock()
+		return
+	}
+	b := l.getBucket(routeKey)
+	b.mu.Lock()
+	b.remaining = 0
+	b.resetTime = reset
+	b.mu.Unlock()
 }
 
