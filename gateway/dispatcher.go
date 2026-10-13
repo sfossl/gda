@@ -13,11 +13,21 @@ type RawHandler func(ctx context.Context, data []byte)
 type EventDispatcher struct {
 	mu        sync.RWMutex
 	listeners map[types.EventName][]RawHandler
+	sem       chan struct{}
 }
 
 func NewEventDispatcher() *EventDispatcher {
 	return &EventDispatcher{
 		listeners: make(map[types.EventName][]RawHandler),
+		sem:       make(chan struct{}, 1024),
+	}
+}
+
+func (d *EventDispatcher) SetMaxConcurrency(n int) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if n > 0 {
+		d.sem = make(chan struct{}, n)
 	}
 }
 
@@ -66,7 +76,25 @@ func (d *EventDispatcher) Dispatch(ctx context.Context, event types.EventName, d
 	d.mu.RUnlock()
 
 	for _, h := range copied {
+		d.mu.RLock()
+		sem := d.sem
+		d.mu.RUnlock()
+
 		go func(fn RawHandler) {
+			if ctx.Err() != nil {
+				return
+			}
+			if sem != nil {
+				select {
+				case sem <- struct{}{}:
+					defer func() { <-sem }()
+				case <-ctx.Done():
+					return
+				}
+			}
+			if ctx.Err() != nil {
+				return
+			}
 			defer func() {
 				_ = recover()
 			}()
