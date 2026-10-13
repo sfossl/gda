@@ -24,13 +24,14 @@ import (
 )
 
 const (
-	wsGUID          = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-	wsOpText        = 0x1
-	wsOpBinary      = 0x2
-	wsOpClose       = 0x8
-	wsOpPing        = 0x9
-	wsOpPong        = 0xa
-	wsMaxPayloadLen = types.MaxPayloadSize
+	wsGUID           = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+	wsOpContinuation = 0x0
+	wsOpText         = 0x1
+	wsOpBinary       = 0x2
+	wsOpClose        = 0x8
+	wsOpPing         = 0x9
+	wsOpPong         = 0xa
+	wsMaxPayloadLen  = types.MaxPayloadSize
 )
 
 var (
@@ -126,6 +127,7 @@ func Dial(ctx context.Context, endpointURL string) (*Conn, error) {
 	fmt.Fprintf(reqBuf, "Sec-WebSocket-Version: 13\r\n")
 	fmt.Fprintf(reqBuf, "User-Agent: %s\r\n\r\n", types.UserAgent)
 
+	_ = netConn.SetDeadline(time.Now().Add(10 * time.Second))
 	if _, err := netConn.Write(reqBuf.Bytes()); err != nil {
 		_ = netConn.Close()
 		return nil, err
@@ -151,6 +153,8 @@ func Dial(ctx context.Context, endpointURL string) (*Conn, error) {
 		_ = netConn.Close()
 		return nil, errors.New("gda/gateway: invalid sec-websocket-accept header")
 	}
+
+	_ = netConn.SetDeadline(time.Time{})
 
 	return &Conn{
 		netConn: netConn,
@@ -211,6 +215,7 @@ func (c *Conn) writeFrame(ctx context.Context, opcode byte, payload []byte) erro
 }
 
 func (c *Conn) ReadText(ctx context.Context) ([]byte, error) {
+	var fragBuf []byte
 	for {
 		if c.closed.Load() {
 			return nil, ErrWSClosed
@@ -221,6 +226,7 @@ func (c *Conn) ReadText(ctx context.Context) ([]byte, error) {
 			return nil, err
 		}
 
+		fin := (b0 & 0x80) != 0
 		opcode := b0 & 0x0f
 
 		b1, err := c.reader.ReadByte()
@@ -249,7 +255,7 @@ func (c *Conn) ReadText(ctx context.Context) ([]byte, error) {
 			payloadLen = binary.BigEndian.Uint64(l[:])
 		}
 
-		if payloadLen > wsMaxPayloadLen {
+		if payloadLen > wsMaxPayloadLen || uint64(len(fragBuf))+payloadLen > wsMaxPayloadLen {
 			return nil, ErrWSPayloadLimit
 		}
 
@@ -273,7 +279,17 @@ func (c *Conn) ReadText(ctx context.Context) ([]byte, error) {
 
 		switch opcode {
 		case wsOpText, wsOpBinary:
-			return payload, nil
+			if fin {
+				return payload, nil
+			}
+			fragBuf = append(fragBuf, payload...)
+		case wsOpContinuation:
+			fragBuf = append(fragBuf, payload...)
+			if fin {
+				res := fragBuf
+				fragBuf = nil
+				return res, nil
+			}
 		case wsOpPing:
 			_ = c.writeFrame(ctx, wsOpPong, payload)
 		case wsOpClose:
