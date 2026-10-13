@@ -3,7 +3,9 @@ package gateway
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/sfossl/gda/types"
 )
@@ -71,6 +73,37 @@ func TestEventDispatcherPanicRecovery(t *testing.T) {
 
 	if !executed {
 		t.Fatalf("expected second handler to execute despite panic in first")
+	}
+}
+
+func TestEventDispatcherContextCancel(t *testing.T) {
+	d := NewEventDispatcher()
+	d.SetMaxConcurrency(1)
+
+	started := make(chan struct{})
+	block := make(chan struct{})
+	d.On("EVENT_BLOCK", func(ctx context.Context, data []byte) {
+		close(started)
+		<-block
+	})
+
+	var secondExecuted atomic.Bool
+	d.On("EVENT_SECOND", func(ctx context.Context, data []byte) {
+		secondExecuted.Store(true)
+	})
+
+	d.Dispatch(context.Background(), "EVENT_BLOCK", nil)
+	<-started
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	d.Dispatch(ctx, "EVENT_SECOND", nil)
+	close(block)
+	time.Sleep(20 * time.Millisecond)
+
+	if secondExecuted.Load() {
+		t.Fatalf("expected second handler to be aborted due to context cancellation")
 	}
 }
 
