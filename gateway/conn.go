@@ -140,6 +140,17 @@ func (c *Client) sendResume(ctx context.Context) error {
 	return c.sendJSON(ctx, p)
 }
 
+func (c *Client) UpdatePresence(ctx context.Context, presence types.PresenceUpdate) error {
+	data, err := json.Marshal(presence)
+	if err != nil {
+		return err
+	}
+	return c.sendJSON(ctx, types.GatewayPayload{
+		Op: types.OpcodePresenceUpdate,
+		D:  data,
+	})
+}
+
 func (c *Client) Connect(ctx context.Context) error {
 	backoff := 1 * time.Second
 
@@ -174,7 +185,11 @@ func (c *Client) Connect(ctx context.Context) error {
 		c.wsConn = conn
 		c.mu.Unlock()
 
+		connectedAt := time.Now()
 		connErr := c.runConnection(ctx, conn)
+		if time.Since(connectedAt) > 10*time.Second || c.state.State() == StateReady {
+			backoff = 1 * time.Second
+		}
 
 		c.mu.Lock()
 		if c.hm != nil {
@@ -254,9 +269,14 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 
 			errChan := hm.Start(connCtx)
 			go func() {
-				if err, ok := <-errChan; ok && err != nil {
-					connCancel()
-					_ = conn.Close(4000, "heartbeat ack timeout")
+				select {
+				case err, ok := <-errChan:
+					if ok && err != nil {
+						connCancel()
+						_ = conn.Close(4000, "heartbeat ack timeout")
+					}
+				case <-connCtx.Done():
+					_ = conn.Close(1000, "context done")
 				}
 			}()
 
