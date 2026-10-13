@@ -114,7 +114,7 @@ func (c *Context) Reply(res Response) error {
 		if c.restClient == nil {
 			return ErrNoRestClient
 		}
-		_, err := c.restClient.CreateFollowupMessage(c.Context(), c.Interaction.AppID, c.Interaction.Token, rest.MessagePayload{
+		_, err := c.restClient.EditOriginalInteractionResponse(c.Context(), c.Interaction.AppID, c.Interaction.Token, rest.MessagePayload{
 			Content:    res.Content,
 			Embeds:     res.Embeds,
 			Components: res.Components,
@@ -270,5 +270,22 @@ func (c *Context) ChannelID() types.Snowflake {
 
 func (c *Context) GuildID() *types.Snowflake {
 	return c.Interaction.GuildID
+}
+
+func (c *Context) Followup(res Response) (*types.Message, error) {
+	if c.restClient == nil {
+		return nil, ErrNoRestClient
+	}
+	var flags types.MessageFlag
+	if res.Ephemeral {
+		flags = types.MessageFlagEphemeral
+	}
+	return c.restClient.CreateFollowupMessage(c.Context(), c.Interaction.AppID, c.Interaction.Token, rest.MessagePayload{
+		Content:    res.Content,
+		Embeds:     res.Embeds,
+		Components: res.Components,
+		Flags:      flags,
+		TTS:        res.TTS,
+	})
 }
 
