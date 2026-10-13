@@ -151,7 +151,8 @@ func (r *Router) Handle(ctx *Context) error {
 	return h(ctx)
 }
 
-func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
+func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http.Handler {
+	shouldAutoDefer := len(autoDefer) > 0 && autoDefer[0]
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		var in types.Interaction
 		if err := json.NewDecoder(req.Body).Decode(&in); err != nil {
@@ -173,6 +174,13 @@ func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
 			errChan <- r.Handle(ctx)
 		}()
 
+		var timeoutChan <-chan time.Time
+		if shouldAutoDefer {
+			timer := time.NewTimer(2500 * time.Millisecond)
+			defer timer.Stop()
+			timeoutChan = timer.C
+		}
+
 		select {
 		case res := <-ctx.ResponseChannel():
 			w.Header().Set("Content-Type", "application/json")
@@ -191,7 +199,7 @@ func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
 			default:
 				w.WriteHeader(http.StatusOK)
 			}
-		case <-time.After(2800 * time.Millisecond):
+		case <-timeoutChan:
 			_ = ctx.Defer(false)
 			select {
 			case res := <-ctx.ResponseChannel():
@@ -201,6 +209,8 @@ func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
 			default:
 				w.WriteHeader(http.StatusOK)
 			}
+		case <-req.Context().Done():
+			w.WriteHeader(http.StatusGatewayTimeout)
 		}
 	})
 }
