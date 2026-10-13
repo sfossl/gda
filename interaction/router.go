@@ -1,6 +1,7 @@
 package interaction
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -151,7 +152,7 @@ func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
 			return
 		}
 
-		ctx := NewContext(req.Context(), &in, restClient)
+		ctx := NewContext(context.WithoutCancel(req.Context()), &in, restClient)
 
 		errChan := make(chan error, 1)
 		go func() {
