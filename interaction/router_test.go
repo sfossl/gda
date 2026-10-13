@@ -75,6 +75,43 @@ func TestRouterSubcommand(t *testing.T) {
 	}
 }
 
+func TestRouterSubcommandGroup(t *testing.T) {
+	router := NewRouter()
+	var executed bool
+
+	router.OnSubcommandGroup("config", "role", "add", func(ctx *Context) error {
+		executed = true
+		return ctx.Reply(Response{Content: "role added"})
+	})
+
+	in := &types.Interaction{
+		Type: types.InteractionTypeApplicationCommand,
+		Data: &types.InteractionData{
+			Name: "config",
+			Options: []types.ApplicationCommandOption{
+				{
+					Name: "role",
+					Type: 2,
+					Options: []types.ApplicationCommandOption{
+						{
+							Name: "add",
+							Type: 1,
+						},
+					},
+				},
+			},
+		},
+	}
+	ctx := NewContext(context.Background(), in, nil)
+	if err := router.Handle(ctx); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !executed {
+		t.Fatalf("expected subcommand group handler to execute")
+	}
+}
+
+
 func TestRouterComponentPrefix(t *testing.T) {
 	router := NewRouter()
 	var paramReceived string
