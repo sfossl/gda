@@ -7,6 +7,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/sfossl/gda/types"
 )
@@ -52,6 +54,17 @@ func VerifyMiddleware(publicKey ed25519.PublicKey) func(http.Handler) http.Handl
 			sig := r.Header.Get(HeaderSignature)
 			ts := r.Header.Get(HeaderTimestamp)
 			if sig == "" || ts == "" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			sec, err := strconv.ParseInt(ts, 10, 64)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			diff := time.Since(time.Unix(sec, 0))
+			if diff < -5*time.Minute || diff > 5*time.Minute {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
