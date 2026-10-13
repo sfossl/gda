@@ -349,3 +349,51 @@ type Choice struct {
 	Name  string `json:"name"`
 	Value any    `json:"value"`
 }
+
+type ActivityType int
+
+const (
+	ActivityTypeGame      ActivityType = 0
+	ActivityTypeStreaming ActivityType = 1
+	ActivityTypeListening ActivityType = 2
+	ActivityTypeWatching  ActivityType = 3
+	ActivityTypeCustom    ActivityType = 4
+	ActivityTypeCompeting ActivityType = 5
+)
+
+type Activity struct {
+	Name  string       `json:"name"`
+	Type  ActivityType `json:"type"`
+	URL   string       `json:"url,omitempty"`
+	State string       `json:"state,omitempty"`
+}
+
+type StatusType string
+
+const (
+	StatusOnline    StatusType = "online"
+	StatusDND       StatusType = "dnd"
+	StatusIdle      StatusType = "idle"
+	StatusInvisible StatusType = "invisible"
+	StatusOffline   StatusType = "offline"
+)
+
+type PresenceUpdate struct {
+	Since      *int64     `json:"since"`
+	Activities []Activity `json:"activities"`
+	Status     StatusType `json:"status"`
+	AFK        bool       `json:"afk"`
+}
+
+type ApplicationCommand struct {
+	ID                       *Snowflake                 `json:"id,omitempty"`
+	AppID                    *Snowflake                 `json:"application_id,omitempty"`
+	GuildID                  *Snowflake                 `json:"guild_id,omitempty"`
+	Name                     string                     `json:"name"`
+	Description              string                     `json:"description,omitempty"`
+	Options                  []ApplicationCommandOption `json:"options,omitempty"`
+	DefaultMemberPermissions *Permission                `json:"default_member_permissions,omitempty"`
+	DMPermission             *bool                      `json:"dm_permission,omitempty"`
+	Type                     int                        `json:"type,omitempty"`
+}
+
