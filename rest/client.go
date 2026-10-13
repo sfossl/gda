@@ -286,3 +286,43 @@ func (c *Client) DeleteOriginalInteractionResponse(ctx context.Context, appID ty
 	return err
 }
 
+func (c *Client) TriggerTyping(ctx context.Context, channelID types.Snowflake) error {
+	_, err := c.Do(ctx, Request{
+		Endpoint: EndpointTriggerTyping(channelID),
+	})
+	return err
+}
+
+func (c *Client) BulkOverwriteGlobalCommands(ctx context.Context, appID types.Snowflake, commands []types.ApplicationCommand) ([]types.ApplicationCommand, error) {
+	data, err := c.Do(ctx, Request{
+		Endpoint: EndpointBulkOverwriteGlobalCommands(appID),
+		Body:     commands,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var registered []types.ApplicationCommand
+	if err := json.Unmarshal(data, &registered); err != nil {
+		return nil, err
+	}
+	return registered, nil
+}
+
+func (c *Client) BulkOverwriteGuildCommands(ctx context.Context, appID, guildID types.Snowflake, commands []types.ApplicationCommand) ([]types.ApplicationCommand, error) {
+	data, err := c.Do(ctx, Request{
+		Endpoint: EndpointBulkOverwriteGuildCommands(appID, guildID),
+		Body:     commands,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var registered []types.ApplicationCommand
+	if err := json.Unmarshal(data, &registered); err != nil {
+		return nil, err
+	}
+	return registered, nil
+}
+
+
