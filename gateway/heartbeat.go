@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"errors"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -18,6 +19,7 @@ type HeartbeatManager struct {
 	ackReceived atomic.Bool
 	sendFunc    func(*int64) error
 	getSeqFunc  func() *int64
+	stopOnce    sync.Once
 	stopChan    chan struct{}
 	running     atomic.Bool
 }
@@ -104,11 +106,8 @@ func (h *HeartbeatManager) Start(ctx context.Context) <-chan error {
 }
 
 func (h *HeartbeatManager) Stop() {
-	if h.running.Load() {
-		select {
-		case h.stopChan <- struct{}{}:
-		default:
-		}
-	}
+	h.stopOnce.Do(func() {
+		close(h.stopChan)
+	})
 }
 
