@@ -192,7 +192,14 @@ func (c *Conn) writeFrame(ctx context.Context, opcode byte, payload []byte) erro
 	header = append(header, mask[:]...)
 
 	maskedPayload := make([]byte, length)
-	for i := 0; i < length; i++ {
+	maskKey := binary.LittleEndian.Uint32(mask[:])
+	mask64 := uint64(maskKey) | (uint64(maskKey) << 32)
+	i := 0
+	for ; i+8 <= length; i += 8 {
+		val := binary.LittleEndian.Uint64(payload[i : i+8])
+		binary.LittleEndian.PutUint64(maskedPayload[i:i+8], val^mask64)
+	}
+	for ; i < length; i++ {
 		maskedPayload[i] = payload[i] ^ mask[i%4]
 	}
 
