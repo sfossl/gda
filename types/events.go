@@ -211,6 +211,9 @@ type Component struct {
 	Placeholder string         `json:"placeholder,omitempty"`
 	MinValues   *int           `json:"min_values,omitempty"`
 	MaxValues   *int           `json:"max_values,omitempty"`
+	Value       string         `json:"value,omitempty"`
+	MinLength   *int           `json:"min_length,omitempty"`
+	MaxLength   *int           `json:"max_length,omitempty"`
 	Components  []Component    `json:"components,omitempty"`
 }
 
