@@ -163,7 +163,7 @@ func (c *Conn) WriteText(ctx context.Context, payload []byte) error {
 }
 
 func (c *Conn) writeFrame(ctx context.Context, opcode byte, payload []byte) error {
-	if c.closed.Load() {
+	if opcode != wsOpClose && c.closed.Load() {
 		return ErrWSClosed
 	}
 
