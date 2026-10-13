@@ -53,6 +53,13 @@ func (r *Router) OnSubcommand(command, subcommand string, h Handler) {
 	r.subcommands[key] = h
 }
 
+func (r *Router) OnSubcommandGroup(command, group, subcommand string, h Handler) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	key := command + ":" + group + ":" + subcommand
+	r.subcommands[key] = h
+}
+
 func (r *Router) OnComponent(customID string, h Handler) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -91,10 +98,20 @@ func (r *Router) findHandler(in *types.Interaction) Handler {
 	case types.InteractionTypeApplicationCommand:
 		cmdName := in.Data.Name
 		for _, opt := range in.Data.Options {
-			if opt.Type == 1 {
+			switch opt.Type {
+			case 1:
 				subKey := cmdName + ":" + opt.Name
 				if h, ok := r.subcommands[subKey]; ok {
 					return h
+				}
+			case 2:
+				for _, subOpt := range opt.Options {
+					if subOpt.Type == 1 {
+						groupKey := cmdName + ":" + opt.Name + ":" + subOpt.Name
+						if h, ok := r.subcommands[groupKey]; ok {
+							return h
+						}
+					}
 				}
 			}
 		}
@@ -187,4 +204,3 @@ func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
 		}
 	})
 }
-
