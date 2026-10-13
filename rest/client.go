@@ -121,7 +121,7 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 			httpReq.Header.Set("Authorization", "Bot "+c.token)
 		}
 		httpReq.Header.Set("Content-Type", "application/json")
-		httpReq.Header.Set("User-Agent", "DiscordBot (github.com/sfossl/bfrm, v0.1.0)")
+		httpReq.Header.Set("User-Agent", types.UserAgent)
 
 		for k, values := range req.Headers {
 			for _, v := range values {
@@ -139,7 +139,7 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 
 		c.limiter.Update(req.Endpoint.Key, resp.Header)
 
-		respBody, err := io.ReadAll(io.LimitReader(resp.Body, 10<<20))
+		respBody, err := io.ReadAll(io.LimitReader(resp.Body, types.MaxPayloadSize))
 		_ = resp.Body.Close()
 		if err != nil {
 			return nil, err
