@@ -11,6 +11,7 @@ var (
 	ErrActionRowEmpty              = errors.New("gda/builder: action row cannot be empty")
 	ErrActionRowTooManyButtons     = errors.New("gda/builder: action row exceeds maximum of 5 buttons")
 	ErrActionRowSelectNotAlone     = errors.New("gda/builder: select menu must be the only component in an action row")
+	ErrActionRowTextInputNotAlone  = errors.New("gda/builder: text input must be the only component in an action row")
 	ErrButtonCustomIDRequired      = errors.New("gda/builder: button custom_id is required for non-link buttons")
 	ErrButtonCustomIDTooLong       = errors.New("gda/builder: button custom_id exceeds 100 characters")
 	ErrButtonLabelTooLong          = errors.New("gda/builder: button label exceeds 80 characters")
@@ -212,6 +213,7 @@ func NewActionRow(components ...types.Component) (types.Component, error) {
 	}
 
 	hasSelect := false
+	hasTextInput := false
 	buttonCount := 0
 
 	for _, c := range components {
@@ -222,14 +224,18 @@ func NewActionRow(components ...types.Component) (types.Component, error) {
 			types.ComponentTypeUserSelect,
 			types.ComponentTypeRoleSelect,
 			types.ComponentTypeMentionableSelect,
-			types.ComponentTypeChannelSelect,
-			types.ComponentTypeTextInput:
+			types.ComponentTypeChannelSelect:
 			hasSelect = true
+		case types.ComponentTypeTextInput:
+			hasTextInput = true
 		}
 	}
 
 	if hasSelect && len(components) > 1 {
 		return types.Component{}, ErrActionRowSelectNotAlone
+	}
+	if hasTextInput && len(components) > 1 {
+		return types.Component{}, ErrActionRowTextInputNotAlone
 	}
 	if buttonCount > 5 {
 		return types.Component{}, ErrActionRowTooManyButtons
