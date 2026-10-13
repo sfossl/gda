@@ -174,11 +174,12 @@ func (c *Conn) writeFrame(ctx context.Context, opcode byte, payload []byte) erro
 	header = append(header, 0x80|opcode)
 
 	length := len(payload)
-	if length < 126 {
+	switch {
+	case length < 126:
 		header = append(header, 0x80|byte(length))
-	} else if length <= 65535 {
+	case length <= 65535:
 		header = append(header, 0x80|126, byte(length>>8), byte(length))
-	} else {
+	default:
 		header = append(header, 0x80|127)
 		var lenBuf [8]byte
 		binary.BigEndian.PutUint64(lenBuf[:], uint64(length))
@@ -231,15 +232,16 @@ func (c *Conn) ReadText(ctx context.Context) ([]byte, error) {
 		lenByte := b1 & 0x7f
 
 		var payloadLen uint64
-		if lenByte < 126 {
+		switch {
+		case lenByte < 126:
 			payloadLen = uint64(lenByte)
-		} else if lenByte == 126 {
+		case lenByte == 126:
 			var l [2]byte
 			if _, err := io.ReadFull(c.reader, l[:]); err != nil {
 				return nil, err
 			}
 			payloadLen = uint64(binary.BigEndian.Uint16(l[:]))
-		} else {
+		default:
 			var l [8]byte
 			if _, err := io.ReadFull(c.reader, l[:]); err != nil {
 				return nil, err
