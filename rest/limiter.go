@@ -167,6 +167,10 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 		if resetAfter, err := strconv.ParseFloat(resetAfterStr, 64); err == nil {
 			b.resetTime = time.Now().Add(time.Duration(resetAfter * float64(time.Second)))
 		}
+	} else if retryAfterStr := header.Get("Retry-After"); retryAfterStr != "" {
+		if retryAfter, err := strconv.ParseFloat(retryAfterStr, 64); err == nil {
+			b.resetTime = time.Now().Add(time.Duration(retryAfter * float64(time.Second)))
+		}
 	}
 }
 
