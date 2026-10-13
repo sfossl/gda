@@ -152,6 +152,11 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 		}
 
 		if resp.StatusCode >= 500 && attempt < c.maxRetries {
+			select {
+			case <-time.After(time.Duration(1<<attempt) * 50 * time.Millisecond):
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
 			continue
 		}
 
