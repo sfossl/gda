@@ -302,12 +302,13 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 				continue
 			}
 
-			if *payload.T == types.EventReady {
+			switch *payload.T {
+			case types.EventReady:
 				var ready types.ReadyEvent
 				if err := json.Unmarshal(payload.D, &ready); err == nil {
 					c.state.SetReady(ready.SessionID, ready.ResumeGatewayURL)
 				}
-			} else if *payload.T == types.EventResumed {
+			case types.EventResumed:
 				c.state.SetState(StateReady)
 			}
 

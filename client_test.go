@@ -6,13 +6,16 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/sfossl/bfrm/interaction"
+	"github.com/sfossl/bfrm/rest"
 	"github.com/sfossl/bfrm/types"
 )
 
@@ -201,4 +204,49 @@ func TestClientLifecycleAndShortcuts(t *testing.T) {
 		t.Fatalf("token must be redacted in String(), got %s", str)
 	}
 }
+
+func TestClientGatewayInteractionHandling(t *testing.T) {
+	var receivedBody []byte
+	var receivedPath string
+	var callbackReceived atomic.Bool
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedPath = r.URL.Path
+		receivedBody, _ = io.ReadAll(r.Body)
+		callbackReceived.Store(true)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	client, err := New("test-token")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	client.REST = rest.NewClient("test-token", rest.WithBaseURL(server.URL))
+
+	client.OnCommand("ping", func(ctx *interaction.Context) error {
+		return ctx.Reply(interaction.Response{Content: "pong"})
+	})
+
+	inPayload := []byte(`{"id":"123","token":"tok_abc","type":2,"data":{"name":"ping"}}`)
+	client.Dispatcher.Dispatch(context.Background(), types.EventInteractionCreate, inPayload)
+
+	for i := 0; i < 50; i++ {
+		if callbackReceived.Load() {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	if !callbackReceived.Load() {
+		t.Fatalf("expected REST interaction callback to be sent")
+	}
+	if !strings.Contains(receivedPath, "/interactions/123/tok_abc/callback") {
+		t.Fatalf("unexpected callback path: %s", receivedPath)
+	}
+	if !bytes.Contains(receivedBody, []byte("pong")) {
+		t.Fatalf("expected pong in callback body: %s", string(receivedBody))
+	}
+}
+
 

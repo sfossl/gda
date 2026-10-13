@@ -166,7 +166,14 @@ func (r *Router) WebhookHandler(restClient *rest.Client) http.Handler {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
+			select {
+			case res := <-ctx.ResponseChannel():
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(w).Encode(res)
+			default:
+				w.WriteHeader(http.StatusOK)
+			}
 		case <-time.After(2800 * time.Millisecond):
 			_ = ctx.Defer(false)
 			select {

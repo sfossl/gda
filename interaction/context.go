@@ -47,6 +47,7 @@ type Context struct {
 	responded    atomic.Bool
 	deferred     atomic.Bool
 	responseChan chan types.InteractionResponse
+	gatewayMode  bool
 }
 
 func NewContext(ctx context.Context, interaction *types.Interaction, restClient *rest.Client) *Context {
@@ -55,6 +56,15 @@ func NewContext(ctx context.Context, interaction *types.Interaction, restClient 
 		Interaction:  interaction,
 		restClient:   restClient,
 		responseChan: make(chan types.InteractionResponse, 1),
+	}
+}
+
+func NewGatewayContext(ctx context.Context, interaction *types.Interaction, restClient *rest.Client) *Context {
+	return &Context{
+		ctx:         ctx,
+		Interaction: interaction,
+		restClient:  restClient,
+		gatewayMode: true,
 	}
 }
 
@@ -82,15 +92,18 @@ func (c *Context) Defer(ephemeral bool) error {
 		},
 	}
 
-	select {
-	case c.responseChan <- res:
-		return nil
-	default:
-		if c.restClient != nil {
-			return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, res)
+	if !c.gatewayMode && c.responseChan != nil {
+		select {
+		case c.responseChan <- res:
+			return nil
+		default:
 		}
-		return nil
 	}
+
+	if c.restClient != nil {
+		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, res)
+	}
+	return nil
 }
 
 func (c *Context) DeferUpdate() error {
@@ -103,15 +116,18 @@ func (c *Context) DeferUpdate() error {
 		Type: types.CallbackTypeDeferredUpdateMessage,
 	}
 
-	select {
-	case c.responseChan <- res:
-		return nil
-	default:
-		if c.restClient != nil {
-			return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, res)
+	if !c.gatewayMode && c.responseChan != nil {
+		select {
+		case c.responseChan <- res:
+			return nil
+		default:
 		}
-		return nil
 	}
+
+	if c.restClient != nil {
+		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, res)
+	}
+	return nil
 }
 
 func (c *Context) Reply(res Response) error {
@@ -146,15 +162,18 @@ func (c *Context) Reply(res Response) error {
 		},
 	}
 
-	select {
-	case c.responseChan <- ir:
-		return nil
-	default:
-		if c.restClient != nil {
-			return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	if !c.gatewayMode && c.responseChan != nil {
+		select {
+		case c.responseChan <- ir:
+			return nil
+		default:
 		}
-		return nil
 	}
+
+	if c.restClient != nil {
+		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	}
+	return nil
 }
 
 func (c *Context) UpdateOriginal(res Response) error {
@@ -189,15 +208,18 @@ func (c *Context) UpdateOriginal(res Response) error {
 		},
 	}
 
-	select {
-	case c.responseChan <- ir:
-		return nil
-	default:
-		if c.restClient != nil {
-			return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	if !c.gatewayMode && c.responseChan != nil {
+		select {
+		case c.responseChan <- ir:
+			return nil
+		default:
 		}
-		return nil
 	}
+
+	if c.restClient != nil {
+		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	}
+	return nil
 }
 
 func (c *Context) Modal(m builder.Modal) error {
@@ -217,15 +239,18 @@ func (c *Context) Modal(m builder.Modal) error {
 		},
 	}
 
-	select {
-	case c.responseChan <- ir:
-		return nil
-	default:
-		if c.restClient != nil {
-			return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	if !c.gatewayMode && c.responseChan != nil {
+		select {
+		case c.responseChan <- ir:
+			return nil
+		default:
 		}
-		return nil
 	}
+
+	if c.restClient != nil {
+		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	}
+	return nil
 }
 
 func (c *Context) CommandName() string {

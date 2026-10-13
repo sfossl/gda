@@ -119,7 +119,7 @@ func NewWithConfig(cfg Config) (*Client, error) {
 	}
 
 	dispatcher.OnInteractionCreate(func(ctx context.Context, in *types.Interaction) {
-		ictx := interaction.NewContext(ctx, in, client.REST)
+		ictx := interaction.NewGatewayContext(ctx, in, client.REST)
 		_ = client.Router.Handle(ictx)
 	})
 

@@ -113,3 +113,28 @@ func TestContextUserAndMember(t *testing.T) {
 	}
 }
 
+func TestGatewayContextReply(t *testing.T) {
+	in := &types.Interaction{
+		ID:    types.Snowflake(100),
+		Token: "tok",
+	}
+	ctx := NewGatewayContext(context.Background(), in, nil)
+	if !ctx.gatewayMode {
+		t.Fatalf("expected gatewayMode true")
+	}
+	if ctx.ResponseChannel() != nil {
+		t.Fatalf("expected nil ResponseChannel in gateway mode")
+	}
+
+	err := ctx.Reply(Response{Content: "gateway reply"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	err = ctx.Reply(Response{Content: "second reply"})
+	if err != ErrAlreadyResponded {
+		t.Fatalf("expected ErrAlreadyResponded, got %v", err)
+	}
+}
+
+
