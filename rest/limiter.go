@@ -33,9 +33,8 @@ func NewRateLimiter() *RateLimiter {
 
 func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	l.mu.RLock()
-	hash, hasHash := l.routeToHash[routeKey]
 	key := routeKey
-	if hasHash {
+	if hash, ok := l.routeToHash[routeKey]; ok {
 		key = hash
 	}
 	b, ok := l.buckets[key]
@@ -48,12 +47,9 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if hasHash {
+	if hash, ok := l.routeToHash[routeKey]; ok {
 		key = hash
-	} else if h, exists := l.routeToHash[routeKey]; exists {
-		key = h
 	}
-
 	b, ok = l.buckets[key]
 	if !ok {
 		b = &bucket{
