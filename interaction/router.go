@@ -71,6 +71,14 @@ func (r *Router) SetDefault(h Handler) {
 	r.defaultHandler = h
 }
 
+func findCustomIDHandler(m map[string]Handler, cid string) Handler {
+	if h, ok := m[cid]; ok {
+		return h
+	}
+	prefix, _ := splitCustomID(cid)
+	return m[prefix]
+}
+
 func (r *Router) findHandler(in *types.Interaction) Handler {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -95,22 +103,12 @@ func (r *Router) findHandler(in *types.Interaction) Handler {
 		}
 
 	case types.InteractionTypeMessageComponent:
-		cid := in.Data.CustomID
-		if h, ok := r.components[cid]; ok {
-			return h
-		}
-		prefix, _ := splitCustomID(cid)
-		if h, ok := r.components[prefix]; ok {
+		if h := findCustomIDHandler(r.components, in.Data.CustomID); h != nil {
 			return h
 		}
 
 	case types.InteractionTypeModalSubmit:
-		cid := in.Data.CustomID
-		if h, ok := r.modals[cid]; ok {
-			return h
-		}
-		prefix, _ := splitCustomID(cid)
-		if h, ok := r.modals[prefix]; ok {
+		if h := findCustomIDHandler(r.modals, in.Data.CustomID); h != nil {
 			return h
 		}
 	}
