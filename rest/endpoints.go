@@ -309,7 +309,7 @@ func EndpointGetUser(userID types.Snowflake) Endpoint {
 	return Endpoint{
 		Method: "GET",
 		Path:   fmt.Sprintf("/users/%s", userID),
-		Key:    fmt.Sprintf("GET:/users/%s", userID),
+		Key:    "GET:/users",
 	}
 }
 
