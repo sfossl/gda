@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 func TestEventDispatcherTyped(t *testing.T) {

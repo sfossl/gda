@@ -3,7 +3,7 @@ package builder
 import (
 	"strings"
 	"testing"
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 func TestModalBuilderValid(t *testing.T) {

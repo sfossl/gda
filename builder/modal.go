@@ -4,22 +4,22 @@ import (
 	"errors"
 	"unicode/utf8"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 var (
-	ErrModalCustomIDRequired       = errors.New("bfrm/builder: modal custom_id is required")
-	ErrModalCustomIDTooLong        = errors.New("bfrm/builder: modal custom_id exceeds 100 characters")
-	ErrModalTitleRequired          = errors.New("bfrm/builder: modal title is required")
-	ErrModalTitleTooLong           = errors.New("bfrm/builder: modal title exceeds 45 characters")
-	ErrModalNoComponents          = errors.New("bfrm/builder: modal must contain at least one text input")
-	ErrModalTooManyComponents      = errors.New("bfrm/builder: modal exceeds maximum of 5 text inputs")
-	ErrTextInputCustomIDRequired   = errors.New("bfrm/builder: text input custom_id is required")
-	ErrTextInputCustomIDTooLong    = errors.New("bfrm/builder: text input custom_id exceeds 100 characters")
-	ErrTextInputLabelRequired      = errors.New("bfrm/builder: text input label is required")
-	ErrTextInputLabelTooLong       = errors.New("bfrm/builder: text input label exceeds 45 characters")
-	ErrTextInputPlaceholderTooLong = errors.New("bfrm/builder: text input placeholder exceeds 100 characters")
-	ErrTextInputValueTooLong       = errors.New("bfrm/builder: text input value exceeds 4000 characters")
+	ErrModalCustomIDRequired       = errors.New("gda/builder: modal custom_id is required")
+	ErrModalCustomIDTooLong        = errors.New("gda/builder: modal custom_id exceeds 100 characters")
+	ErrModalTitleRequired          = errors.New("gda/builder: modal title is required")
+	ErrModalTitleTooLong           = errors.New("gda/builder: modal title exceeds 45 characters")
+	ErrModalNoComponents          = errors.New("gda/builder: modal must contain at least one text input")
+	ErrModalTooManyComponents      = errors.New("gda/builder: modal exceeds maximum of 5 text inputs")
+	ErrTextInputCustomIDRequired   = errors.New("gda/builder: text input custom_id is required")
+	ErrTextInputCustomIDTooLong    = errors.New("gda/builder: text input custom_id exceeds 100 characters")
+	ErrTextInputLabelRequired      = errors.New("gda/builder: text input label is required")
+	ErrTextInputLabelTooLong       = errors.New("gda/builder: text input label exceeds 45 characters")
+	ErrTextInputPlaceholderTooLong = errors.New("gda/builder: text input placeholder exceeds 100 characters")
+	ErrTextInputValueTooLong       = errors.New("gda/builder: text input value exceeds 4000 characters")
 )
 
 type TextInputStyle int

@@ -6,15 +6,15 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/sfossl/bfrm/builder"
-	"github.com/sfossl/bfrm/rest"
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/builder"
+	"github.com/sfossl/gda/rest"
+	"github.com/sfossl/gda/types"
 )
 
 var (
-	ErrAlreadyResponded = errors.New("bfrm/interaction: interaction already acknowledged")
-	ErrModalAfterDefer  = errors.New("bfrm/interaction: cannot send modal after deferring")
-	ErrNoRestClient     = errors.New("bfrm/interaction: rest client required for followups")
+	ErrAlreadyResponded = errors.New("gda/interaction: interaction already acknowledged")
+	ErrModalAfterDefer  = errors.New("gda/interaction: cannot send modal after deferring")
+	ErrNoRestClient     = errors.New("gda/interaction: rest client required for followups")
 )
 
 type Response struct {

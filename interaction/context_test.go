@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sfossl/bfrm/builder"
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/builder"
+	"github.com/sfossl/gda/types"
 )
 
 func TestContextReply(t *testing.T) {

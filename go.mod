@@ -1,3 +1,3 @@
-module github.com/sfossl/bfrm
+module github.com/sfossl/gda
 
 go 1.24

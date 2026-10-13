@@ -3,7 +3,7 @@ package rest
 import (
 	"fmt"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 const (

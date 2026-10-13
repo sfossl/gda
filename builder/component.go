@@ -4,24 +4,24 @@ import (
 	"errors"
 	"unicode/utf8"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 var (
-	ErrActionRowEmpty              = errors.New("bfrm/builder: action row cannot be empty")
-	ErrActionRowTooManyButtons     = errors.New("bfrm/builder: action row exceeds maximum of 5 buttons")
-	ErrActionRowSelectNotAlone     = errors.New("bfrm/builder: select menu must be the only component in an action row")
-	ErrButtonCustomIDRequired      = errors.New("bfrm/builder: button custom_id is required for non-link buttons")
-	ErrButtonCustomIDTooLong       = errors.New("bfrm/builder: button custom_id exceeds 100 characters")
-	ErrButtonLabelTooLong          = errors.New("bfrm/builder: button label exceeds 80 characters")
-	ErrButtonURLRequired           = errors.New("bfrm/builder: url is required for link button")
-	ErrButtonURLNotAllowed         = errors.New("bfrm/builder: url is not allowed on non-link button")
-	ErrSelectCustomIDRequired      = errors.New("bfrm/builder: select menu custom_id is required")
-	ErrSelectCustomIDTooLong       = errors.New("bfrm/builder: select menu custom_id exceeds 100 characters")
-	ErrSelectPlaceholderTooLong    = errors.New("bfrm/builder: select placeholder exceeds 150 characters")
-	ErrSelectTooManyOptions        = errors.New("bfrm/builder: select menu exceeds maximum of 25 options")
-	ErrSelectOptionLabelRequired   = errors.New("bfrm/builder: select option label is required")
-	ErrSelectOptionValueRequired   = errors.New("bfrm/builder: select option value is required")
+	ErrActionRowEmpty              = errors.New("gda/builder: action row cannot be empty")
+	ErrActionRowTooManyButtons     = errors.New("gda/builder: action row exceeds maximum of 5 buttons")
+	ErrActionRowSelectNotAlone     = errors.New("gda/builder: select menu must be the only component in an action row")
+	ErrButtonCustomIDRequired      = errors.New("gda/builder: button custom_id is required for non-link buttons")
+	ErrButtonCustomIDTooLong       = errors.New("gda/builder: button custom_id exceeds 100 characters")
+	ErrButtonLabelTooLong          = errors.New("gda/builder: button label exceeds 80 characters")
+	ErrButtonURLRequired           = errors.New("gda/builder: url is required for link button")
+	ErrButtonURLNotAllowed         = errors.New("gda/builder: url is not allowed on non-link button")
+	ErrSelectCustomIDRequired      = errors.New("gda/builder: select menu custom_id is required")
+	ErrSelectCustomIDTooLong       = errors.New("gda/builder: select menu custom_id exceeds 100 characters")
+	ErrSelectPlaceholderTooLong    = errors.New("gda/builder: select placeholder exceeds 150 characters")
+	ErrSelectTooManyOptions        = errors.New("gda/builder: select menu exceeds maximum of 25 options")
+	ErrSelectOptionLabelRequired   = errors.New("gda/builder: select option label is required")
+	ErrSelectOptionValueRequired   = errors.New("gda/builder: select option value is required")
 )
 
 type ButtonStyle int

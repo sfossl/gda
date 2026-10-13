@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 var (
-	ErrInvalidPublicKey = errors.New("bfrm/interaction: invalid ed25519 public key")
-	ErrInvalidSignature = errors.New("bfrm/interaction: invalid ed25519 signature")
+	ErrInvalidPublicKey = errors.New("gda/interaction: invalid ed25519 public key")
+	ErrInvalidSignature = errors.New("gda/interaction: invalid ed25519 signature")
 )
 
 const (

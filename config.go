@@ -1,16 +1,16 @@
-package bfrm
+package gda
 
 import (
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 var (
-	ErrMissingToken = errors.New("bfrm: bot token is required")
-	ErrInvalidShard = errors.New("bfrm: shard id must be non-negative and less than shard count")
+	ErrMissingToken = errors.New("gda: bot token is required")
+	ErrInvalidShard = errors.New("gda: shard id must be non-negative and less than shard count")
 )
 
 type Config struct {

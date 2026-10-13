@@ -1,4 +1,4 @@
-package bfrm
+package gda
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sfossl/bfrm/gateway"
-	"github.com/sfossl/bfrm/interaction"
-	"github.com/sfossl/bfrm/rest"
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/gateway"
+	"github.com/sfossl/gda/interaction"
+	"github.com/sfossl/gda/rest"
+	"github.com/sfossl/gda/types"
 )
 
 var (
-	ErrMissingPublicKey = errors.New("bfrm: public key is required for webhook interactions")
+	ErrMissingPublicKey = errors.New("gda: public key is required for webhook interactions")
 )
 
 type Option func(*Config)

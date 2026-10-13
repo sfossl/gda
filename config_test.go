@@ -1,11 +1,11 @@
-package bfrm
+package gda
 
 import (
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 func TestDefaultConfig(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 type Client struct {

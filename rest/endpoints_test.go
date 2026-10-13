@@ -3,7 +3,7 @@ package rest
 import (
 	"testing"
 
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/types"
 )
 
 func TestEndpointsFormatting(t *testing.T) {

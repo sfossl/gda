@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sfossl/bfrm/rest"
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/rest"
+	"github.com/sfossl/gda/types"
 )
 
 type Handler func(*Context) error

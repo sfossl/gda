@@ -1,4 +1,4 @@
-package bfrm
+package gda
 
 import (
 	"bytes"
@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sfossl/bfrm/interaction"
-	"github.com/sfossl/bfrm/rest"
-	"github.com/sfossl/bfrm/types"
+	"github.com/sfossl/gda/interaction"
+	"github.com/sfossl/gda/rest"
+	"github.com/sfossl/gda/types"
 )
 
 func TestClientOptions(t *testing.T) {
