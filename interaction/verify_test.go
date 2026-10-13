@@ -7,7 +7,9 @@ import (
 	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func TestVerifySignature(t *testing.T) {
@@ -60,7 +62,7 @@ func TestParsePublicKey(t *testing.T) {
 
 func TestVerifyMiddleware(t *testing.T) {
 	pub, priv, _ := ed25519.GenerateKey(rand.Reader)
-	ts := "1600000000"
+	ts := strconv.FormatInt(time.Now().Unix(), 10)
 	body := []byte(`{"type":1}`)
 	msg := append([]byte(ts), body...)
 	sigHex := hex.EncodeToString(ed25519.Sign(priv, msg))
@@ -95,6 +97,18 @@ func TestVerifyMiddleware(t *testing.T) {
 	handler.ServeHTTP(noHeadersRR, noHeadersReq)
 	if noHeadersRR.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status 401, got %d", noHeadersRR.Code)
+	}
+
+	oldTs := "1600000000"
+	oldMsg := append([]byte(oldTs), body...)
+	oldSig := hex.EncodeToString(ed25519.Sign(priv, oldMsg))
+	expiredReq := httptest.NewRequest("POST", "/interactions", bytes.NewReader(body))
+	expiredReq.Header.Set(HeaderSignature, oldSig)
+	expiredReq.Header.Set(HeaderTimestamp, oldTs)
+	expiredRR := httptest.NewRecorder()
+	handler.ServeHTTP(expiredRR, expiredReq)
+	if expiredRR.Code != http.StatusUnauthorized {
+		t.Fatalf("expected status 401 for expired timestamp, got %d", expiredRR.Code)
 	}
 }
 
