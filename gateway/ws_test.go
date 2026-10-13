@@ -176,3 +176,38 @@ func TestNativeWSDialAndFrames(t *testing.T) {
 	}
 }
 
+func TestNativeWSFragmentedFrames(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sConn, err := acceptMockWS(w, r)
+		if err != nil {
+			return
+		}
+		defer sConn.Close()
+
+		frame1 := []byte{0x01, 0x05, 'p', 'i', 'e', 'c', 'e'}
+		frame2 := []byte{0x80, 0x05, '1', '2', '3', '4', '5'}
+		_, _ = sConn.conn.Write(frame1)
+		_, _ = sConn.conn.Write(frame2)
+	}))
+	defer ts.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+
+	ctx := context.Background()
+	clientConn, err := Dial(ctx, wsURL)
+	if err != nil {
+		t.Fatalf("dial error: %v", err)
+	}
+	defer clientConn.Close(1000, "closing")
+
+	msg, err := clientConn.ReadText(ctx)
+	if err != nil {
+		t.Fatalf("read error: %v", err)
+	}
+
+	if string(msg) != "piece12345" {
+		t.Fatalf("expected piece12345, got %s", string(msg))
+	}
+}
+
+
