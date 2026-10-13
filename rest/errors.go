@@ -141,7 +141,7 @@ func (e *APIError) Error() string {
 
 func IsNotFound(err error) bool {
 	var apiErr *APIError
-	if errors.As(err, &apiErr) {
+	if errors.As(err, &apiErr) && apiErr != nil {
 		return apiErr.HTTPStatus == http.StatusNotFound
 	}
 	return false
@@ -149,7 +149,7 @@ func IsNotFound(err error) bool {
 
 func IsRateLimited(err error) bool {
 	var apiErr *APIError
-	if errors.As(err, &apiErr) {
+	if errors.As(err, &apiErr) && apiErr != nil {
 		return apiErr.HTTPStatus == http.StatusTooManyRequests
 	}
 	return false
@@ -157,7 +157,7 @@ func IsRateLimited(err error) bool {
 
 func IsUnauthorized(err error) bool {
 	var apiErr *APIError
-	if errors.As(err, &apiErr) {
+	if errors.As(err, &apiErr) && apiErr != nil {
 		return apiErr.HTTPStatus == http.StatusUnauthorized
 	}
 	return false
@@ -165,8 +165,16 @@ func IsUnauthorized(err error) bool {
 
 func IsForbidden(err error) bool {
 	var apiErr *APIError
-	if errors.As(err, &apiErr) {
+	if errors.As(err, &apiErr) && apiErr != nil {
 		return apiErr.HTTPStatus == http.StatusForbidden
+	}
+	return false
+}
+
+func HasErrorCode(err error, code int) bool {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) && apiErr != nil {
+		return apiErr.Code == code
 	}
 	return false
 }

@@ -37,9 +37,18 @@ func TestAPIErrorHelpers(t *testing.T) {
 		t.Fatalf("expected IsUnauthorized true")
 	}
 
-	forbidden := &APIError{HTTPStatus: http.StatusForbidden}
+	forbidden := &APIError{HTTPStatus: http.StatusForbidden, Code: ErrCodeMissingPermissions}
 	if !IsForbidden(forbidden) {
 		t.Fatalf("expected IsForbidden true")
+	}
+	if !HasErrorCode(forbidden, ErrCodeMissingPermissions) {
+		t.Fatalf("expected HasErrorCode true")
+	}
+	if HasErrorCode(forbidden, ErrCodeUnknownChannel) {
+		t.Fatalf("expected HasErrorCode false")
+	}
+	if HasErrorCode(nil, ErrCodeMissingPermissions) {
+		t.Fatalf("expected HasErrorCode false on nil error")
 	}
 }
 
