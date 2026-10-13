@@ -250,4 +250,14 @@ func TestClientGatewayInteractionHandling(t *testing.T) {
 	}
 }
 
+func TestClientAutoDeferWiring(t *testing.T) {
+	c, err := New("token", WithAutoDefer(true))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !c.Config.AutoDefer {
+		t.Fatalf("expected AutoDefer to be true")
+	}
+}
+
 

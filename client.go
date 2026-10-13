@@ -120,6 +120,12 @@ func NewWithConfig(cfg Config) (*Client, error) {
 
 	dispatcher.OnInteractionCreate(func(ctx context.Context, in *types.Interaction) {
 		ictx := interaction.NewGatewayContext(ctx, in, client.REST)
+		if client.Config.AutoDefer {
+			timer := time.AfterFunc(2500*time.Millisecond, func() {
+				_ = ictx.Defer(false)
+			})
+			defer timer.Stop()
+		}
 		_ = client.Router.Handle(ictx)
 	})
 
@@ -144,7 +150,7 @@ func (c *Client) WebhookHandler() (http.Handler, error) {
 		return nil, err
 	}
 
-	handler := c.Router.WebhookHandler(c.REST)
+	handler := c.Router.WebhookHandler(c.REST, c.Config.AutoDefer)
 	return interaction.VerifyMiddleware(pubKey)(handler), nil
 }
 
