@@ -2,6 +2,7 @@ package builder
 
 import (
 	"errors"
+	"unicode/utf8"
 
 	"github.com/sfossl/bfrm/types"
 )
@@ -44,19 +45,19 @@ func NewTextInput(customID, label string, style TextInputStyle) *TextInputBuilde
 	}
 	if customID == "" {
 		b.err = ErrTextInputCustomIDRequired
-	} else if len(customID) > 100 {
+	} else if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrTextInputCustomIDTooLong
 	}
 	if label == "" {
 		b.err = ErrTextInputLabelRequired
-	} else if len(label) > 45 {
+	} else if utf8.RuneCountInString(label) > 45 {
 		b.err = ErrTextInputLabelTooLong
 	}
 	return b
 }
 
 func (b *TextInputBuilder) SetPlaceholder(placeholder string) *TextInputBuilder {
-	if len(placeholder) > 100 {
+	if utf8.RuneCountInString(placeholder) > 100 {
 		b.err = ErrTextInputPlaceholderTooLong
 		return b
 	}
@@ -65,17 +66,17 @@ func (b *TextInputBuilder) SetPlaceholder(placeholder string) *TextInputBuilder 
 }
 
 func (b *TextInputBuilder) SetValue(value string) *TextInputBuilder {
-	if len(value) > 4000 {
+	if utf8.RuneCountInString(value) > 4000 {
 		b.err = ErrTextInputValueTooLong
 		return b
 	}
-	b.comp.Label = value
+	b.comp.Value = value
 	return b
 }
 
 func (b *TextInputBuilder) SetLength(min, max int) *TextInputBuilder {
-	b.comp.MinValues = &min
-	b.comp.MaxValues = &max
+	b.comp.MinLength = &min
+	b.comp.MaxLength = &max
 	return b
 }
 
@@ -100,12 +101,12 @@ func NewModal(customID, title string) *ModalBuilder {
 	}
 	if customID == "" {
 		b.err = ErrModalCustomIDRequired
-	} else if len(customID) > 100 {
+	} else if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrModalCustomIDTooLong
 	}
 	if title == "" {
 		b.err = ErrModalTitleRequired
-	} else if len(title) > 45 {
+	} else if utf8.RuneCountInString(title) > 45 {
 		b.err = ErrModalTitleTooLong
 	}
 	return b

@@ -84,3 +84,25 @@ func TestTextInputBuilderLimits(t *testing.T) {
 	}
 }
 
+func TestTextInputBuilderValueAndLength(t *testing.T) {
+	comp, err := NewTextInput("id", "label", TextInputStyleShort).
+		SetValue("prefilled").
+		SetLength(5, 50).
+		Build()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if comp.Label != "label" {
+		t.Fatalf("expected label 'label', got %s", comp.Label)
+	}
+	if comp.Value != "prefilled" {
+		t.Fatalf("expected value 'prefilled', got %s", comp.Value)
+	}
+	if comp.MinLength == nil || *comp.MinLength != 5 {
+		t.Fatalf("expected min_length 5")
+	}
+	if comp.MaxLength == nil || *comp.MaxLength != 50 {
+		t.Fatalf("expected max_length 50")
+	}
+}
+
