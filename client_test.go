@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -142,7 +143,7 @@ func TestClientWebhookHandler(t *testing.T) {
 		t.Fatalf("expected 401 without signature, got %d", w.Code)
 	}
 
-	ts := "1700000000"
+	ts := strconv.FormatInt(time.Now().Unix(), 10)
 	body := []byte(`{"type":1}`)
 	sigMsg := append([]byte(ts), body...)
 	sig := ed25519.Sign(priv, sigMsg)
