@@ -2,6 +2,7 @@ package builder
 
 import (
 	"errors"
+	"unicode/utf8"
 
 	"github.com/sfossl/bfrm/types"
 )
@@ -54,7 +55,7 @@ func (b *ButtonBuilder) SetStyle(style ButtonStyle) *ButtonBuilder {
 }
 
 func (b *ButtonBuilder) SetCustomID(customID string) *ButtonBuilder {
-	if len(customID) > 100 {
+	if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrButtonCustomIDTooLong
 		return b
 	}
@@ -63,7 +64,7 @@ func (b *ButtonBuilder) SetCustomID(customID string) *ButtonBuilder {
 }
 
 func (b *ButtonBuilder) SetLabel(label string) *ButtonBuilder {
-	if len(label) > 80 {
+	if utf8.RuneCountInString(label) > 80 {
 		b.err = ErrButtonLabelTooLong
 		return b
 	}
@@ -128,7 +129,7 @@ func NewStringSelect(customID string) *SelectMenuBuilder {
 	}
 	if customID == "" {
 		b.err = ErrSelectCustomIDRequired
-	} else if len(customID) > 100 {
+	} else if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrSelectCustomIDTooLong
 	}
 	return b
@@ -143,7 +144,7 @@ func NewUserSelect(customID string) *SelectMenuBuilder {
 	}
 	if customID == "" {
 		b.err = ErrSelectCustomIDRequired
-	} else if len(customID) > 100 {
+	} else if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrSelectCustomIDTooLong
 	}
 	return b
@@ -158,7 +159,7 @@ func NewRoleSelect(customID string) *SelectMenuBuilder {
 	}
 	if customID == "" {
 		b.err = ErrSelectCustomIDRequired
-	} else if len(customID) > 100 {
+	} else if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrSelectCustomIDTooLong
 	}
 	return b
@@ -173,14 +174,14 @@ func NewChannelSelect(customID string) *SelectMenuBuilder {
 	}
 	if customID == "" {
 		b.err = ErrSelectCustomIDRequired
-	} else if len(customID) > 100 {
+	} else if utf8.RuneCountInString(customID) > 100 {
 		b.err = ErrSelectCustomIDTooLong
 	}
 	return b
 }
 
 func (b *SelectMenuBuilder) SetPlaceholder(placeholder string) *SelectMenuBuilder {
-	if len(placeholder) > 150 {
+	if utf8.RuneCountInString(placeholder) > 150 {
 		b.err = ErrSelectPlaceholderTooLong
 		return b
 	}

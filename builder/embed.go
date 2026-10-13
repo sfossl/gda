@@ -3,6 +3,7 @@ package builder
 import (
 	"errors"
 	"time"
+	"unicode/utf8"
 
 	"github.com/sfossl/bfrm/types"
 )
@@ -34,7 +35,7 @@ func NewEmbed() *EmbedBuilder {
 }
 
 func (b *EmbedBuilder) SetTitle(title string) *EmbedBuilder {
-	if len(title) > 256 {
+	if utf8.RuneCountInString(title) > 256 {
 		b.err = ErrEmbedTitleTooLong
 		return b
 	}
@@ -43,7 +44,7 @@ func (b *EmbedBuilder) SetTitle(title string) *EmbedBuilder {
 }
 
 func (b *EmbedBuilder) SetDescription(desc string) *EmbedBuilder {
-	if len(desc) > 4096 {
+	if utf8.RuneCountInString(desc) > 4096 {
 		b.err = ErrEmbedDescriptionTooLong
 		return b
 	}
@@ -68,7 +69,7 @@ func (b *EmbedBuilder) SetTimestamp(t time.Time) *EmbedBuilder {
 }
 
 func (b *EmbedBuilder) SetFooter(text, iconURL string) *EmbedBuilder {
-	if len(text) > 2048 {
+	if utf8.RuneCountInString(text) > 2048 {
 		b.err = ErrEmbedFooterTooLong
 		return b
 	}
@@ -94,7 +95,7 @@ func (b *EmbedBuilder) SetThumbnail(url string) *EmbedBuilder {
 }
 
 func (b *EmbedBuilder) SetAuthor(name, url, iconURL string) *EmbedBuilder {
-	if len(name) > 256 {
+	if utf8.RuneCountInString(name) > 256 {
 		b.err = ErrEmbedAuthorTooLong
 		return b
 	}
@@ -118,7 +119,7 @@ func (b *EmbedBuilder) AddField(name, value string, inline bool) *EmbedBuilder {
 		b.err = ErrEmbedFieldNameEmpty
 		return b
 	}
-	if len(name) > 256 {
+	if utf8.RuneCountInString(name) > 256 {
 		b.err = ErrEmbedFieldNameTooLong
 		return b
 	}
@@ -126,7 +127,7 @@ func (b *EmbedBuilder) AddField(name, value string, inline bool) *EmbedBuilder {
 		b.err = ErrEmbedFieldValueEmpty
 		return b
 	}
-	if len(value) > 1024 {
+	if utf8.RuneCountInString(value) > 1024 {
 		b.err = ErrEmbedFieldValueTooLong
 		return b
 	}
@@ -143,15 +144,15 @@ func (b *EmbedBuilder) Build() (types.Embed, error) {
 		return types.Embed{}, b.err
 	}
 
-	total := len(b.embed.Title) + len(b.embed.Description)
+	total := utf8.RuneCountInString(b.embed.Title) + utf8.RuneCountInString(b.embed.Description)
 	if b.embed.Footer != nil {
-		total += len(b.embed.Footer.Text)
+		total += utf8.RuneCountInString(b.embed.Footer.Text)
 	}
 	if b.embed.Author != nil {
-		total += len(b.embed.Author.Name)
+		total += utf8.RuneCountInString(b.embed.Author.Name)
 	}
 	for _, f := range b.embed.Fields {
-		total += len(f.Name) + len(f.Value)
+		total += utf8.RuneCountInString(f.Name) + utf8.RuneCountInString(f.Value)
 	}
 
 	if total > 6000 {
