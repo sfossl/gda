@@ -16,21 +16,6 @@ const (
 	OpcodeHeartbeatACK        GatewayOpcode = 11
 )
 
-type VoiceOpcode int
-
-const (
-	VoiceOpcodeIdentify           VoiceOpcode = 0
-	VoiceOpcodeSelectProtocol     VoiceOpcode = 1
-	VoiceOpcodeReady              VoiceOpcode = 2
-	VoiceOpcodeHeartbeat          VoiceOpcode = 3
-	VoiceOpcodeSessionDescription VoiceOpcode = 4
-	VoiceOpcodeSpeaking           VoiceOpcode = 5
-	VoiceOpcodeHeartbeatACK       VoiceOpcode = 6
-	VoiceOpcodeResume             VoiceOpcode = 7
-	VoiceOpcodeHello              VoiceOpcode = 8
-	VoiceOpcodeResumed            VoiceOpcode = 9
-	VoiceOpcodeClientDisconnect   VoiceOpcode = 13
-)
 
 const (
 	GatewayCloseUnknownError          = 4000
