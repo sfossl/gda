@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -151,7 +152,7 @@ func (c *Client) Connect(ctx context.Context) error {
 
 		endpointURL := c.cfg.GatewayURL
 		if c.state.CanResume() && c.state.ResumeGatewayURL() != "" {
-			endpointURL = c.state.ResumeGatewayURL() + "/?v=" + types.APIVersion + "&encoding=json"
+			endpointURL = strings.TrimRight(c.state.ResumeGatewayURL(), "/") + "/?v=" + types.APIVersion + "&encoding=json"
 		}
 
 		c.state.SetState(StateConnecting)
