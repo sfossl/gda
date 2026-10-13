@@ -249,7 +249,8 @@ func NewActionRow(components ...types.Component) (types.Component, error) {
 			types.ComponentTypeUserSelect,
 			types.ComponentTypeRoleSelect,
 			types.ComponentTypeMentionableSelect,
-			types.ComponentTypeChannelSelect:
+			types.ComponentTypeChannelSelect,
+			types.ComponentTypeTextInput:
 			hasSelect = true
 		}
 	}

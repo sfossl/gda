@@ -135,6 +135,12 @@ func TestActionRowBuilder(t *testing.T) {
 		t.Fatalf("expected ErrActionRowSelectNotAlone, got %v", err)
 	}
 
+	txt := types.Component{Type: types.ComponentTypeTextInput, CustomID: "txt"}
+	_, err = NewActionRow(txt, b1)
+	if err != ErrActionRowSelectNotAlone {
+		t.Fatalf("expected ErrActionRowSelectNotAlone for text input, got %v", err)
+	}
+
 	_, err = NewActionRow()
 	if err != ErrActionRowEmpty {
 		t.Fatalf("expected ErrActionRowEmpty, got %v", err)
