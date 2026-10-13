@@ -96,14 +96,16 @@ func (b *ButtonBuilder) Build() (types.Component, error) {
 		return types.Component{}, b.err
 	}
 
-	if b.comp.Style == int(ButtonStyleLink) {
+	switch b.comp.Style {
+	case int(ButtonStyleLink):
 		if b.comp.URL == "" {
 			return types.Component{}, ErrButtonURLRequired
 		}
 		if b.comp.CustomID != "" {
 			return types.Component{}, ErrButtonURLNotAllowed
 		}
-	} else if b.comp.Style != int(ButtonStylePremium) {
+	case int(ButtonStylePremium):
+	default:
 		if b.comp.CustomID == "" {
 			return types.Component{}, ErrButtonCustomIDRequired
 		}
@@ -120,10 +122,10 @@ type SelectMenuBuilder struct {
 	err  error
 }
 
-func NewStringSelect(customID string) *SelectMenuBuilder {
+func newSelectMenu(t types.ComponentType, customID string) *SelectMenuBuilder {
 	b := &SelectMenuBuilder{
 		comp: types.Component{
-			Type:     types.ComponentTypeStringSelect,
+			Type:     t,
 			CustomID: customID,
 		},
 	}
@@ -133,51 +135,22 @@ func NewStringSelect(customID string) *SelectMenuBuilder {
 		b.err = ErrSelectCustomIDTooLong
 	}
 	return b
+}
+
+func NewStringSelect(customID string) *SelectMenuBuilder {
+	return newSelectMenu(types.ComponentTypeStringSelect, customID)
 }
 
 func NewUserSelect(customID string) *SelectMenuBuilder {
-	b := &SelectMenuBuilder{
-		comp: types.Component{
-			Type:     types.ComponentTypeUserSelect,
-			CustomID: customID,
-		},
-	}
-	if customID == "" {
-		b.err = ErrSelectCustomIDRequired
-	} else if utf8.RuneCountInString(customID) > 100 {
-		b.err = ErrSelectCustomIDTooLong
-	}
-	return b
+	return newSelectMenu(types.ComponentTypeUserSelect, customID)
 }
 
 func NewRoleSelect(customID string) *SelectMenuBuilder {
-	b := &SelectMenuBuilder{
-		comp: types.Component{
-			Type:     types.ComponentTypeRoleSelect,
-			CustomID: customID,
-		},
-	}
-	if customID == "" {
-		b.err = ErrSelectCustomIDRequired
-	} else if utf8.RuneCountInString(customID) > 100 {
-		b.err = ErrSelectCustomIDTooLong
-	}
-	return b
+	return newSelectMenu(types.ComponentTypeRoleSelect, customID)
 }
 
 func NewChannelSelect(customID string) *SelectMenuBuilder {
-	b := &SelectMenuBuilder{
-		comp: types.Component{
-			Type:     types.ComponentTypeChannelSelect,
-			CustomID: customID,
-		},
-	}
-	if customID == "" {
-		b.err = ErrSelectCustomIDRequired
-	} else if utf8.RuneCountInString(customID) > 100 {
-		b.err = ErrSelectCustomIDTooLong
-	}
-	return b
+	return newSelectMenu(types.ComponentTypeChannelSelect, customID)
 }
 
 func (b *SelectMenuBuilder) SetPlaceholder(placeholder string) *SelectMenuBuilder {
