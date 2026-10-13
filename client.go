@@ -156,6 +156,10 @@ func (c *Client) OnSubcommand(command, subcommand string, h interaction.Handler)
 	c.Router.OnSubcommand(command, subcommand, h)
 }
 
+func (c *Client) OnSubcommandGroup(command, group, subcommand string, h interaction.Handler) {
+	c.Router.OnSubcommandGroup(command, group, subcommand, h)
+}
+
 func (c *Client) OnComponent(customID string, h interaction.Handler) {
 	c.Router.OnComponent(customID, h)
 }
@@ -174,6 +178,14 @@ func (c *Client) OnReady(h func(context.Context, *types.ReadyEvent)) {
 
 func (c *Client) On(event types.EventName, h gateway.RawHandler) {
 	c.Dispatcher.On(event, h)
+}
+
+func (c *Client) UpdatePresence(ctx context.Context, presence types.PresenceUpdate) error {
+	return c.Gateway.UpdatePresence(ctx, presence)
+}
+
+func (c *Client) TriggerTyping(ctx context.Context, channelID types.Snowflake) error {
+	return c.REST.TriggerTyping(ctx, channelID)
 }
 
 func (c *Client) String() string {
