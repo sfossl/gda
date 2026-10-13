@@ -125,3 +125,37 @@ func TestClientCreateDM(t *testing.T) {
 	}
 }
 
+func TestClientTriggerTypingAndCommands(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "POST" && r.URL.Path == "/channels/555/typing":
+			w.WriteHeader(http.StatusNoContent)
+		case r.Method == "PUT" && r.URL.Path == "/applications/777/commands":
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode([]types.ApplicationCommand{
+				{Name: "ping"},
+			})
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer ts.Close()
+
+	client := NewClient("test-token", WithBaseURL(ts.URL))
+	err := client.TriggerTyping(context.Background(), types.Snowflake(555))
+	if err != nil {
+		t.Fatalf("unexpected typing error: %v", err)
+	}
+
+	cmds, err := client.BulkOverwriteGlobalCommands(context.Background(), types.Snowflake(777), []types.ApplicationCommand{
+		{Name: "ping"},
+	})
+	if err != nil {
+		t.Fatalf("unexpected bulk overwrite error: %v", err)
+	}
+	if len(cmds) != 1 || cmds[0].Name != "ping" {
+		t.Fatalf("unexpected commands returned: %+v", cmds)
+	}
+}
+
+
