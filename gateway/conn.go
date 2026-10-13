@@ -151,7 +151,7 @@ func (c *Client) Connect(ctx context.Context) error {
 
 		endpointURL := c.cfg.GatewayURL
 		if c.state.CanResume() && c.state.ResumeGatewayURL() != "" {
-			endpointURL = c.state.ResumeGatewayURL() + "/?v=10&encoding=json"
+			endpointURL = c.state.ResumeGatewayURL() + "/?v=" + types.APIVersion + "&encoding=json"
 		}
 
 		c.state.SetState(StateConnecting)
@@ -279,8 +279,11 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 			}
 
 		case types.OpcodeHeartbeat:
-			seq := c.state.sequence
-			_ = c.sendHeartbeat(connCtx, &seq)
+			var seqPtr *int64
+			if seq, ok := c.state.Sequence(); ok {
+				seqPtr = &seq
+			}
+			_ = c.sendHeartbeat(connCtx, seqPtr)
 
 		case types.OpcodeReconnect:
 			return errors.New("bfrm/gateway: discord requested reconnect")
