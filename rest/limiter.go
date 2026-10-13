@@ -1,0 +1,172 @@
+package rest
+
+import (
+	"context"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+)
+
+type RateLimiter struct {
+	mu          sync.RWMutex
+	buckets     map[string]*bucket
+	routeToHash map[string]string
+
+	globalMu    sync.RWMutex
+	globalReset time.Time
+}
+
+type bucket struct {
+	mu        sync.Mutex
+	remaining int
+	limit     int
+	resetTime time.Time
+}
+
+func NewRateLimiter() *RateLimiter {
+	return &RateLimiter{
+		buckets:     make(map[string]*bucket),
+		routeToHash: make(map[string]string),
+	}
+}
+
+func (l *RateLimiter) getBucket(routeKey string) *bucket {
+	l.mu.RLock()
+	hash, hasHash := l.routeToHash[routeKey]
+	key := routeKey
+	if hasHash {
+		key = hash
+	}
+	b, ok := l.buckets[key]
+	l.mu.RUnlock()
+
+	if ok {
+		return b
+	}
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if hasHash {
+		key = hash
+	} else if h, exists := l.routeToHash[routeKey]; exists {
+		key = h
+	}
+
+	b, ok = l.buckets[key]
+	if !ok {
+		b = &bucket{
+			remaining: 1,
+			limit:     1,
+		}
+		l.buckets[key] = b
+	}
+	return b
+}
+
+func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
+	for {
+		l.globalMu.RLock()
+		gReset := l.globalReset
+		l.globalMu.RUnlock()
+
+		now := time.Now()
+		if now.Before(gReset) {
+			wait := gReset.Sub(now)
+			timer := time.NewTimer(wait)
+			select {
+			case <-timer.C:
+			case <-ctx.Done():
+				timer.Stop()
+				return ctx.Err()
+			}
+			continue
+		}
+		break
+	}
+
+	b := l.getBucket(routeKey)
+
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	for {
+		now := time.Now()
+		if now.After(b.resetTime) && b.limit > 0 {
+			b.remaining = b.limit
+		}
+
+		if b.remaining > 0 {
+			b.remaining--
+			return nil
+		}
+
+		wait := b.resetTime.Sub(now)
+		if wait <= 0 {
+			wait = 50 * time.Millisecond
+		}
+
+		b.mu.Unlock()
+		timer := time.NewTimer(wait)
+		select {
+		case <-timer.C:
+			b.mu.Lock()
+		case <-ctx.Done():
+			timer.Stop()
+			b.mu.Lock()
+			return ctx.Err()
+		}
+	}
+}
+
+func (l *RateLimiter) Update(routeKey string, header http.Header) {
+	if header == nil {
+		return
+	}
+
+	if header.Get("X-RateLimit-Global") == "true" {
+		retryAfterStr := header.Get("Retry-After")
+		if retryAfter, err := strconv.ParseFloat(retryAfterStr, 64); err == nil {
+			l.globalMu.Lock()
+			l.globalReset = time.Now().Add(time.Duration(retryAfter * float64(time.Second)))
+			l.globalMu.Unlock()
+		}
+		return
+	}
+
+	bucketHash := header.Get("X-RateLimit-Bucket")
+	bKey := routeKey
+	if bucketHash != "" {
+		l.mu.Lock()
+		l.routeToHash[routeKey] = bucketHash
+		if existing, ok := l.buckets[routeKey]; ok {
+			l.buckets[bucketHash] = existing
+		}
+		bKey = bucketHash
+		l.mu.Unlock()
+	}
+
+	b := l.getBucket(bKey)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if limStr := header.Get("X-RateLimit-Limit"); limStr != "" {
+		if lim, err := strconv.Atoi(limStr); err == nil {
+			b.limit = lim
+		}
+	}
+
+	if remStr := header.Get("X-RateLimit-Remaining"); remStr != "" {
+		if rem, err := strconv.Atoi(remStr); err == nil {
+			b.remaining = rem
+		}
+	}
+
+	if resetAfterStr := header.Get("X-RateLimit-Reset-After"); resetAfterStr != "" {
+		if resetAfter, err := strconv.ParseFloat(resetAfterStr, 64); err == nil {
+			b.resetTime = time.Now().Add(time.Duration(resetAfter * float64(time.Second)))
+		}
+	}
+}
+
