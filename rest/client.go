@@ -146,6 +146,13 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 		}
 
 		if resp.StatusCode == http.StatusTooManyRequests {
+			var rateLimitResp struct {
+				RetryAfter float64 `json:"retry_after"`
+				Global     bool    `json:"global"`
+			}
+			if err := json.Unmarshal(respBody, &rateLimitResp); err == nil && rateLimitResp.RetryAfter > 0 {
+				c.limiter.UpdateWithRetryAfter(req.Endpoint.Key, rateLimitResp.RetryAfter, rateLimitResp.Global)
+			}
 			if attempt < c.maxRetries {
 				continue
 			}

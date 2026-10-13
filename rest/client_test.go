@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/sfossl/gda/types"
 )
@@ -155,6 +156,37 @@ func TestClientTriggerTypingAndCommands(t *testing.T) {
 	}
 	if len(cmds) != 1 || cmds[0].Name != "ping" {
 		t.Fatalf("unexpected commands returned: %+v", cmds)
+	}
+}
+
+func TestClientRateLimitResponseBody(t *testing.T) {
+	var attempts atomic.Int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if attempts.Add(1) == 1 {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = w.Write([]byte(`{"message":"You are being rate limited.","retry_after":0.05,"global":false}`))
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"999"}`))
+	}))
+	defer ts.Close()
+
+	client := NewClient("test-token", WithBaseURL(ts.URL))
+	start := time.Now()
+	_, err := client.Do(context.Background(), Request{
+		Endpoint: EndpointGetChannel(types.Snowflake(999)),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error on retry: %v", err)
+	}
+	if attempts.Load() != 2 {
+		t.Fatalf("expected 2 attempts, got %d", attempts.Load())
+	}
+	if time.Since(start) < 40*time.Millisecond {
+		t.Fatalf("expected backoff delay from body >= 40ms, got %v", time.Since(start))
 	}
 }
 
