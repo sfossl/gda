@@ -16,7 +16,7 @@ func TestClientSendMessage(t *testing.T) {
 		if r.Header.Get("Authorization") != "Bot test-token" {
 			t.Errorf("missing or bad authorization header: %s", r.Header.Get("Authorization"))
 		}
-		if r.Header.Get("User-Agent") != "DiscordBot (github.com/sfossl/bfrm, v0.1.0)" {
+		if r.Header.Get("User-Agent") != types.UserAgent {
 			t.Errorf("unexpected user agent: %s", r.Header.Get("User-Agent"))
 		}
 		if r.Method != "POST" || r.URL.Path != "/channels/123/messages" {
