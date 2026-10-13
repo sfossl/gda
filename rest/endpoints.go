@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	APIVersion = "10"
-	BaseURL    = "https://discord.com/api/v" + APIVersion
+	BaseURL = "https://discord.com/api/v" + types.APIVersion
 )
 
 type Endpoint struct {
