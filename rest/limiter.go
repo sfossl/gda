@@ -140,11 +140,13 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 	if bucketHash != "" {
 		l.mu.Lock()
 		l.routeToHash[routeKey] = bucketHash
-		if existing, ok := l.buckets[routeKey]; ok {
-			l.buckets[bucketHash] = existing
-			if routeKey != bucketHash {
-				delete(l.buckets, routeKey)
+		if _, exists := l.buckets[bucketHash]; !exists {
+			if existing, ok := l.buckets[routeKey]; ok {
+				l.buckets[bucketHash] = existing
 			}
+		}
+		if routeKey != bucketHash {
+			delete(l.buckets, routeKey)
 		}
 		bKey = bucketHash
 		l.mu.Unlock()
