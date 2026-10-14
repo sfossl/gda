@@ -404,6 +404,7 @@ type ApplicationCommand struct {
 	Options                  []ApplicationCommandOption `json:"options,omitempty"`
 	DefaultMemberPermissions *Permission                `json:"default_member_permissions,omitempty"`
 	DMPermission             *bool                      `json:"dm_permission,omitempty"`
+	NSFW                     *bool                      `json:"nsfw,omitempty"`
 	Type                     int                        `json:"type,omitempty"`
 }
 
