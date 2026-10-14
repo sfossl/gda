@@ -1,6 +1,8 @@
 package gateway
 
 import (
+	"bytes"
+	"compress/zlib"
 	"context"
 	"encoding/json"
 	"errors"
@@ -240,4 +242,93 @@ func TestGatewayCancelBeforeHelloTerminatesConnect(t *testing.T) {
 		t.Fatalf("Connect did not exit on ctx cancel before Hello")
 	}
 }
+
+func TestGatewayZlibCompression(t *testing.T) {
+	var identifyReceived sync.WaitGroup
+	identifyReceived.Add(1)
+
+	var readyHandled sync.WaitGroup
+	readyHandled.Add(1)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.URL.RawQuery, "compress=zlib-stream") {
+			t.Errorf("expected compress=zlib-stream in query, got: %s", r.URL.RawQuery)
+		}
+
+		sConn, err := acceptMockWS(w, r)
+		if err != nil {
+			return
+		}
+		defer sConn.Close()
+
+		var buf bytes.Buffer
+		zw, _ := zlib.NewWriterLevel(&buf, zlib.DefaultCompression)
+
+		hello := types.GatewayPayload{
+			Op: types.OpcodeHello,
+			D:  []byte(`{"heartbeat_interval":50}`),
+		}
+		helloData, _ := json.Marshal(hello)
+		_, _ = zw.Write(helloData)
+		_ = zw.Flush()
+
+		_ = sConn.WriteBinary(buf.Bytes())
+		buf.Reset()
+
+		idMsg, err := sConn.ReadText()
+		if err != nil {
+			return
+		}
+		var idPayload types.GatewayPayload
+		_ = json.Unmarshal(idMsg, &idPayload)
+		if idPayload.Op == types.OpcodeIdentify {
+			identifyReceived.Done()
+		}
+
+		ready := types.GatewayPayload{
+			Op: types.OpcodeDispatch,
+			S:  new(int64),
+			T:  new(types.EventName),
+			D:  []byte(`{"session_id":"sess_zlib","resume_gateway_url":"wss://gateway.discord.gg","user":{"id":"1","username":"bot"}}`),
+		}
+		*ready.S = 1
+		*ready.T = types.EventReady
+		readyData, _ := json.Marshal(ready)
+		_, _ = zw.Write(readyData)
+		_ = zw.Flush()
+
+		_ = sConn.WriteBinary(buf.Bytes())
+		_ = zw.Close()
+
+		time.Sleep(100 * time.Millisecond)
+	}))
+	defer ts.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+	dispatcher := NewEventDispatcher()
+	dispatcher.OnReady(func(ctx context.Context, r *types.ReadyEvent) {
+		if r.SessionID == "sess_zlib" {
+			readyHandled.Done()
+		}
+	})
+
+	client := NewClient(Config{
+		Token:      "token_123",
+		GatewayURL: wsURL,
+		Compress:   true,
+	}, dispatcher)
+
+	go func() {
+		_ = client.Connect(context.Background())
+	}()
+
+	identifyReceived.Wait()
+	readyHandled.Wait()
+
+	if client.State().SessionID() != "sess_zlib" {
+		t.Fatalf("expected session ID sess_zlib, got: %s", client.State().SessionID())
+	}
+	_ = client.Close()
+}
+
 
