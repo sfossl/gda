@@ -3,6 +3,7 @@ package interaction
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -171,6 +172,11 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 
 		errChan := make(chan error, 1)
 		go func() {
+			defer func() {
+				if rec := recover(); rec != nil {
+					errChan <- fmt.Errorf("panic in interaction handler: %v", rec)
+				}
+			}()
 			errChan <- r.Handle(ctx)
 		}()
 
