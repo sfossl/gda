@@ -171,3 +171,35 @@ func TestRateLimiterNoThunderingHerd(t *testing.T) {
 	}
 }
 
+func TestRateLimiterSharedBucket(t *testing.T) {
+	limiter := NewRateLimiter()
+	route1 := "POST:/channels/1/messages"
+	route2 := "POST:/channels/2/messages"
+	sharedHash := "hash_abc_123"
+
+	h1 := make(http.Header)
+	h1.Set("X-RateLimit-Bucket", sharedHash)
+	h1.Set("X-RateLimit-Limit", "5")
+	h1.Set("X-RateLimit-Remaining", "0")
+	h1.Set("X-RateLimit-Reset-After", "0.05")
+	limiter.Update(route1, h1)
+
+	h2 := make(http.Header)
+	h2.Set("X-RateLimit-Bucket", sharedHash)
+	limiter.Update(route2, h2)
+
+	b1 := limiter.getBucket(route1)
+	b2 := limiter.getBucket(route2)
+	if b1 != b2 {
+		t.Fatalf("expected route1 and route2 to share bucket pointer, got %p and %p", b1, b2)
+	}
+
+	start := time.Now()
+	_ = limiter.Acquire(context.Background(), route2)
+	elapsed := time.Since(start)
+
+	if elapsed < 40*time.Millisecond {
+		t.Fatalf("expected route2 to wait for shared bucket reset, got %v", elapsed)
+	}
+}
+
