@@ -89,8 +89,9 @@ func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
 
 	for {
 		now := time.Now()
-		if now.After(b.resetTime) && b.limit > 0 {
+		if !b.resetTime.IsZero() && now.After(b.resetTime) && b.limit > 0 {
 			b.remaining = b.limit
+			b.resetTime = time.Time{}
 		}
 
 		if b.remaining > 0 {
@@ -108,6 +109,9 @@ func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
 		select {
 		case <-timer.C:
 			b.mu.Lock()
+			if b.resetTime.IsZero() && b.limit > 0 {
+				b.remaining = b.limit
+			}
 		case <-ctx.Done():
 			timer.Stop()
 			b.mu.Lock()
