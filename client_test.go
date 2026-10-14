@@ -30,6 +30,7 @@ func TestClientOptions(t *testing.T) {
 		WithMaxRetries(5),
 		WithLargeThreshold(100),
 		WithAutoDefer(true),
+		WithCompression(true),
 	)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -58,6 +59,9 @@ func TestClientOptions(t *testing.T) {
 	}
 	if !client.Config.AutoDefer {
 		t.Fatalf("expected auto defer true")
+	}
+	if !client.Config.Compress {
+		t.Fatalf("expected compress true")
 	}
 }
 
