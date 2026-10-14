@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -203,3 +204,40 @@ func TestGatewayCloseTerminatesConnect(t *testing.T) {
 		t.Fatalf("Connect did not exit on Close()")
 	}
 }
+
+func TestGatewayCancelBeforeHelloTerminatesConnect(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sConn, err := acceptMockWS(w, r)
+		if err != nil {
+			return
+		}
+		defer sConn.Close()
+		time.Sleep(2 * time.Second)
+	}))
+	defer ts.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+	client := NewClient(Config{
+		Token:      "token_123",
+		GatewayURL: wsURL,
+	}, NewEventDispatcher())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		done <- client.Connect(ctx)
+	}()
+
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("expected context.Canceled, got: %v", err)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatalf("Connect did not exit on ctx cancel before Hello")
+	}
+}
+
