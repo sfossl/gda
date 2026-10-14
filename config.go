@@ -24,6 +24,7 @@ type Config struct {
 	MaxRetries     int
 	LargeThreshold int
 	AutoDefer      bool
+	Compress       bool
 }
 
 func DefaultConfig(token string) Config {
