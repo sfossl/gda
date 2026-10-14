@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"time"
 
@@ -87,6 +88,7 @@ type Request struct {
 	Endpoint Endpoint
 	Body     any
 	Headers  http.Header
+	Files    []types.File
 }
 
 type MessagePayload struct {
@@ -95,16 +97,57 @@ type MessagePayload struct {
 	Components []types.Component `json:"components,omitempty"`
 	Flags      types.MessageFlag `json:"flags,omitempty"`
 	TTS        bool              `json:"tts,omitempty"`
+	Files      []types.File      `json:"-"`
 }
 
 func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 	var bodyBytes []byte
-	if req.Body != nil {
+	var contentType string
+
+	if len(req.Files) > 0 {
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+		if req.Body != nil {
+			jb, err := json.Marshal(req.Body)
+			if err != nil {
+				return nil, err
+			}
+			part, err := mw.CreateFormField("payload_json")
+			if err != nil {
+				return nil, err
+			}
+			if _, err := part.Write(jb); err != nil {
+				return nil, err
+			}
+		}
+		for i, f := range req.Files {
+			partName := fmt.Sprintf("files[%d]", i)
+			fileName := f.Name
+			if fileName == "" {
+				fileName = fmt.Sprintf("file_%d", i)
+			}
+			part, err := mw.CreateFormFile(partName, fileName)
+			if err != nil {
+				return nil, err
+			}
+			if f.Reader != nil {
+				if _, err := io.Copy(part, f.Reader); err != nil {
+					return nil, err
+				}
+			}
+		}
+		if err := mw.Close(); err != nil {
+			return nil, err
+		}
+		bodyBytes = buf.Bytes()
+		contentType = mw.FormDataContentType()
+	} else if req.Body != nil {
 		var err error
 		bodyBytes, err = json.Marshal(req.Body)
 		if err != nil {
 			return nil, err
 		}
+		contentType = "application/json"
 	}
 
 	for attempt := 0; attempt <= c.maxRetries; attempt++ {
@@ -126,7 +169,9 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 		if c.token != "" {
 			httpReq.Header.Set("Authorization", "Bot "+c.token)
 		}
-		httpReq.Header.Set("Content-Type", "application/json")
+		if contentType != "" {
+			httpReq.Header.Set("Content-Type", contentType)
+		}
 		httpReq.Header.Set("User-Agent", types.UserAgent)
 
 		for k, values := range req.Headers {
@@ -217,6 +262,7 @@ func (c *Client) SendMessage(ctx context.Context, channelID types.Snowflake, pay
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointSendMessage(channelID),
 		Body:     payload,
+		Files:    payload.Files,
 	})
 	if err != nil {
 		return nil, err
@@ -233,6 +279,7 @@ func (c *Client) EditMessage(ctx context.Context, channelID, messageID types.Sno
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointEditMessage(channelID, messageID),
 		Body:     payload,
+		Files:    payload.Files,
 	})
 	if err != nil {
 		return nil, err
@@ -253,9 +300,14 @@ func (c *Client) DeleteMessage(ctx context.Context, channelID, messageID types.S
 }
 
 func (c *Client) CreateInteractionResponse(ctx context.Context, interactionID types.Snowflake, token string, response types.InteractionResponse) error {
+	var files []types.File
+	if response.Data != nil {
+		files = response.Data.Files
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointInteractionCallback(interactionID, token),
 		Body:     response,
+		Files:    files,
 	})
 	return err
 }
@@ -264,6 +316,7 @@ func (c *Client) CreateFollowupMessage(ctx context.Context, appID types.Snowflak
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointFollowupMessage(appID, token),
 		Body:     payload,
+		Files:    payload.Files,
 	})
 	if err != nil {
 		return nil, err
@@ -280,6 +333,7 @@ func (c *Client) EditOriginalInteractionResponse(ctx context.Context, appID type
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointEditOriginalInteraction(appID, token),
 		Body:     payload,
+		Files:    payload.Files,
 	})
 	if err != nil {
 		return nil, err
