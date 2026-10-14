@@ -42,7 +42,9 @@ func (s Snowflake) MarshalJSON() ([]byte, error) {
 }
 
 func (s *Snowflake) UnmarshalJSON(b []byte) error {
-	b = bytes.Trim(b, `"`)
+	if len(b) >= 2 && b[0] == '"' && b[len(b)-1] == '"' {
+		b = b[1 : len(b)-1]
+	}
 	if len(b) == 0 || bytes.Equal(b, []byte("null")) {
 		*s = 0
 		return nil
