@@ -3,8 +3,10 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -187,6 +189,56 @@ func TestClientRateLimitResponseBody(t *testing.T) {
 	}
 	if time.Since(start) < 40*time.Millisecond {
 		t.Fatalf("expected backoff delay from body >= 40ms, got %v", time.Since(start))
+	}
+}
+
+func TestSendMessageWithFiles(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		contentType := r.Header.Get("Content-Type")
+		if !strings.HasPrefix(contentType, "multipart/form-data") {
+			t.Fatalf("expected multipart content type, got: %s", contentType)
+		}
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			t.Fatalf("failed to parse multipart form: %v", err)
+		}
+		payloadJSON := r.FormValue("payload_json")
+		if !strings.Contains(payloadJSON, "test content") {
+			t.Fatalf("missing payload_json content, got: %s", payloadJSON)
+		}
+		file, header, err := r.FormFile("files[0]")
+		if err != nil {
+			t.Fatalf("failed to read form file: %v", err)
+		}
+		defer file.Close()
+		if header.Filename != "test.txt" {
+			t.Fatalf("expected filename test.txt, got %s", header.Filename)
+		}
+		fileData, _ := io.ReadAll(file)
+		if string(fileData) != "sample file data" {
+			t.Fatalf("unexpected file data: %s", string(fileData))
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"101","channel_id":"202","content":"test content","author":{"id":"1","username":"b","discriminator":"0"}}`))
+	}))
+	defer ts.Close()
+
+	client := NewClient("token", WithBaseURL(ts.URL))
+	msg, err := client.SendMessage(context.Background(), types.Snowflake(202), MessagePayload{
+		Content: "test content",
+		Files: []types.File{
+			{
+				Name:   "test.txt",
+				Reader: strings.NewReader("sample file data"),
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if msg.ID != types.Snowflake(101) {
+		t.Fatalf("unexpected message id: %s", msg.ID)
 	}
 }
 
