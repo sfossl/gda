@@ -79,6 +79,27 @@ func (s *mockWSServerConn) WriteText(payload []byte) error {
 	return err
 }
 
+func (s *mockWSServerConn) WriteBinary(payload []byte) error {
+	header := make([]byte, 0, 10)
+	header = append(header, 0x82)
+
+	length := len(payload)
+	if length < 126 {
+		header = append(header, byte(length))
+	} else if length <= 65535 {
+		header = append(header, 126, byte(length>>8), byte(length))
+	} else {
+		header = append(header, 127)
+		var lenBuf [8]byte
+		binary.BigEndian.PutUint64(lenBuf[:], uint64(length))
+		header = append(header, lenBuf[:]...)
+	}
+
+	buf := append(header, payload...)
+	_, err := s.conn.Write(buf)
+	return err
+}
+
 func (s *mockWSServerConn) ReadText() ([]byte, error) {
 	b0, err := s.reader.ReadByte()
 	if err != nil {
