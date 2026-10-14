@@ -343,6 +343,7 @@ type InteractionResponseData struct {
 	Choices         []Choice      `json:"choices,omitempty"`
 	CustomID        string        `json:"custom_id,omitempty"`
 	Title           string        `json:"title,omitempty"`
+	Files           []File        `json:"-"`
 }
 
 type Choice struct {
