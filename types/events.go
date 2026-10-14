@@ -305,11 +305,20 @@ type Role struct {
 }
 
 type ApplicationCommandOption struct {
-	Name    string                     `json:"name"`
-	Type    int                        `json:"type"`
-	Value   any                        `json:"value,omitempty"`
-	Options []ApplicationCommandOption `json:"options,omitempty"`
-	Focused bool                       `json:"focused,omitempty"`
+	Name         string                     `json:"name"`
+	Type         int                        `json:"type"`
+	Description  string                     `json:"description,omitempty"`
+	Required     bool                       `json:"required,omitempty"`
+	Choices      []Choice                   `json:"choices,omitempty"`
+	Value        any                        `json:"value,omitempty"`
+	Options      []ApplicationCommandOption `json:"options,omitempty"`
+	ChannelTypes []int                      `json:"channel_types,omitempty"`
+	MinValue     *float64                   `json:"min_value,omitempty"`
+	MaxValue     *float64                   `json:"max_value,omitempty"`
+	MinLength    *int                       `json:"min_length,omitempty"`
+	MaxLength    *int                       `json:"max_length,omitempty"`
+	Autocomplete bool                       `json:"autocomplete,omitempty"`
+	Focused      bool                       `json:"focused,omitempty"`
 }
 
 type MessageFlag uint64
