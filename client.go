@@ -67,6 +67,12 @@ func WithAutoDefer(autoDefer bool) Option {
 	}
 }
 
+func WithCompression(compress bool) Option {
+	return func(c *Config) {
+		c.Compress = compress
+	}
+}
+
 type Client struct {
 	Config     Config
 	REST       *rest.Client
@@ -106,6 +112,7 @@ func NewWithConfig(cfg Config) (*Client, error) {
 		ShardID:        cfg.ShardID,
 		ShardCount:     cfg.ShardCount,
 		LargeThreshold: cfg.LargeThreshold,
+		Compress:       cfg.Compress,
 	}, dispatcher)
 
 	router := interaction.NewRouter()
