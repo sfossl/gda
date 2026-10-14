@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -119,6 +120,54 @@ func TestRateLimiterUpdateWithRetryAfter(t *testing.T) {
 
 	if elapsed < 40*time.Millisecond {
 		t.Fatalf("expected global delay >= 40ms, got %v", elapsed)
+	}
+}
+
+func TestRateLimiterNoThunderingHerd(t *testing.T) {
+	limiter := NewRateLimiter()
+	ctx := context.Background()
+	route := "POST:/channels/7/messages"
+
+	header := make(http.Header)
+	header.Set("X-RateLimit-Limit", "1")
+	header.Set("X-RateLimit-Remaining", "0")
+	header.Set("X-RateLimit-Reset-After", "0.05")
+	limiter.Update(route, header)
+
+	start := time.Now()
+	var wg sync.WaitGroup
+	wg.Add(2)
+	var t1, t2 time.Duration
+	var firstAcquired atomic.Bool
+
+	go func() {
+		defer wg.Done()
+		_ = limiter.Acquire(ctx, route)
+		t1 = time.Since(start)
+		if firstAcquired.CompareAndSwap(false, true) {
+			h := make(http.Header)
+			h.Set("X-RateLimit-Limit", "1")
+			h.Set("X-RateLimit-Remaining", "1")
+			limiter.Update(route, h)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		_ = limiter.Acquire(ctx, route)
+		t2 = time.Since(start)
+		if firstAcquired.CompareAndSwap(false, true) {
+			h := make(http.Header)
+			h.Set("X-RateLimit-Limit", "1")
+			h.Set("X-RateLimit-Remaining", "1")
+			limiter.Update(route, h)
+		}
+	}()
+
+	wg.Wait()
+
+	if t1 < 40*time.Millisecond || t2 < 40*time.Millisecond {
+		t.Fatalf("expected both to wait >= 40ms, got t1=%v, t2=%v", t1, t2)
 	}
 }
 
