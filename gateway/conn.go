@@ -161,6 +161,10 @@ func (c *Client) Connect(ctx context.Context) error {
 		default:
 		}
 
+		if c.state.State() == StateClosed {
+			return nil
+		}
+
 		endpointURL := c.cfg.GatewayURL
 		if c.state.CanResume() && c.state.ResumeGatewayURL() != "" {
 			endpointURL = strings.TrimRight(c.state.ResumeGatewayURL(), "/") + "/?v=" + types.APIVersion + "&encoding=json"
@@ -200,6 +204,10 @@ func (c *Client) Connect(ctx context.Context) error {
 		c.mu.Unlock()
 
 		_ = conn.Close(1000, "")
+
+		if c.state.State() == StateClosed {
+			return nil
+		}
 
 		if connErr != nil {
 			var closeErr CloseError
@@ -341,6 +349,7 @@ func (c *Client) Close() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	c.state.SetState(StateClosed)
 	if c.hm != nil {
 		c.hm.Stop()
 		c.hm = nil
@@ -348,7 +357,6 @@ func (c *Client) Close() error {
 	if c.wsConn != nil {
 		err := c.wsConn.Close(1000, "client closing")
 		c.wsConn = nil
-		c.state.SetState(StateClosed)
 		return err
 	}
 	return nil
