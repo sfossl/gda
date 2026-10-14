@@ -200,3 +200,20 @@ func TestRouterWebhookHandler(t *testing.T) {
 	}
 }
 
+func TestRouterWebhookHandlerPanicRecovery(t *testing.T) {
+	router := NewRouter()
+	router.OnCommand("boom", func(ctx *Context) error {
+		panic("forced handler crash")
+	})
+
+	h := router.WebhookHandler(nil)
+	cmdBody := []byte(`{"type":2,"data":{"name":"boom"}}`)
+	req := httptest.NewRequest("POST", "/interactions", bytes.NewReader(cmdBody))
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status 500 on panic, got %d", rr.Code)
+	}
+}
+
