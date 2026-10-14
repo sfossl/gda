@@ -77,6 +77,12 @@ func NewClient(token string, opts ...ClientOption) *Client {
 	return c
 }
 
+func (c *Client) CloseIdleConnections() {
+	if c.httpClient != nil {
+		c.httpClient.CloseIdleConnections()
+	}
+}
+
 type Request struct {
 	Endpoint Endpoint
 	Body     any
