@@ -156,3 +156,50 @@ func TestGatewayResume(t *testing.T) {
 	}
 	_ = client.Close()
 }
+
+func TestGatewayCloseTerminatesConnect(t *testing.T) {
+	var identifyReceived sync.WaitGroup
+	identifyReceived.Add(1)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sConn, err := acceptMockWS(w, r)
+		if err != nil {
+			return
+		}
+		defer sConn.Close()
+
+		hello := types.GatewayPayload{
+			Op: types.OpcodeHello,
+			D:  []byte(`{"heartbeat_interval":50}`),
+		}
+		helloData, _ := json.Marshal(hello)
+		_ = sConn.WriteText(helloData)
+		_, _ = sConn.ReadText()
+		identifyReceived.Done()
+		time.Sleep(1 * time.Second)
+	}))
+	defer ts.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+	client := NewClient(Config{
+		Token:      "token_123",
+		GatewayURL: wsURL,
+	}, NewEventDispatcher())
+
+	done := make(chan error, 1)
+	go func() {
+		done <- client.Connect(context.Background())
+	}()
+
+	identifyReceived.Wait()
+	_ = client.Close()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("expected nil error on clean close, got: %v", err)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatalf("Connect did not exit on Close()")
+	}
+}
