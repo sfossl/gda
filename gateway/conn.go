@@ -1,10 +1,12 @@
 package gateway
 
 import (
+	"compress/zlib"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"runtime"
 	"strings"
 	"sync"
@@ -28,6 +30,7 @@ type Config struct {
 	ShardCount     int
 	LargeThreshold int
 	GatewayURL     string
+	Compress       bool
 }
 
 type Client struct {
@@ -169,6 +172,13 @@ func (c *Client) Connect(ctx context.Context) error {
 		if c.state.CanResume() && c.state.ResumeGatewayURL() != "" {
 			endpointURL = strings.TrimRight(c.state.ResumeGatewayURL(), "/") + "/?v=" + types.APIVersion + "&encoding=json"
 		}
+		if c.cfg.Compress && !strings.Contains(endpointURL, "compress=") {
+			sep := "?"
+			if strings.Contains(endpointURL, "?") {
+				sep = "&"
+			}
+			endpointURL += sep + "compress=zlib-stream"
+		}
 
 		c.state.SetState(StateConnecting)
 		conn, err := Dial(ctx, endpointURL)
@@ -240,15 +250,60 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 	})
 	defer stopWatcher()
 
-	for {
-		data, err := conn.ReadText(connCtx)
+	var getPayload func() (*types.GatewayPayload, error)
+
+	if c.cfg.Compress {
+		pr, pw := io.Pipe()
+		defer pr.Close()
+		defer pw.Close()
+
+		go func() {
+			for {
+				data, err := conn.ReadText(connCtx)
+				if err != nil {
+					_ = pw.CloseWithError(err)
+					return
+				}
+				if _, err := pw.Write(data); err != nil {
+					return
+				}
+			}
+		}()
+
+		zr, err := zlib.NewReader(pr)
 		if err != nil {
 			return err
 		}
+		defer zr.Close()
 
-		var payload types.GatewayPayload
-		if err := json.Unmarshal(data, &payload); err != nil {
-			continue
+		dec := json.NewDecoder(zr)
+		getPayload = func() (*types.GatewayPayload, error) {
+			var p types.GatewayPayload
+			if err := dec.Decode(&p); err != nil {
+				return nil, err
+			}
+			return &p, nil
+		}
+	} else {
+		getPayload = func() (*types.GatewayPayload, error) {
+			for {
+				data, err := conn.ReadText(connCtx)
+				if err != nil {
+					return nil, err
+				}
+				var p types.GatewayPayload
+				if err := json.Unmarshal(data, &p); err != nil {
+					continue
+				}
+				return &p, nil
+			}
+		}
+	}
+
+	for {
+		payload, err := getPayload()
+		if err != nil {
+			return err
 		}
 
 		if payload.S != nil {
