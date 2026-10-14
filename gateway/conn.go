@@ -235,6 +235,11 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 	connCtx, connCancel := context.WithCancel(ctx)
 	defer connCancel()
 
+	stopWatcher := context.AfterFunc(connCtx, func() {
+		_ = conn.Close(1000, "context done")
+	})
+	defer stopWatcher()
+
 	for {
 		data, err := conn.ReadText(connCtx)
 		if err != nil {
@@ -277,14 +282,9 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 
 			errChan := hm.Start(connCtx)
 			go func() {
-				select {
-				case err, ok := <-errChan:
-					if ok && err != nil {
-						connCancel()
-						_ = conn.Close(4000, "heartbeat ack timeout")
-					}
-				case <-connCtx.Done():
-					_ = conn.Close(1000, "context done")
+				if err, ok := <-errChan; ok && err != nil {
+					connCancel()
+					_ = conn.Close(4000, "heartbeat ack timeout")
 				}
 			}()
 
