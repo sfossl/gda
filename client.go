@@ -137,6 +137,9 @@ func (c *Client) Start(ctx context.Context) error {
 }
 
 func (c *Client) Close() error {
+	if c.REST != nil {
+		c.REST.CloseIdleConnections()
+	}
 	return c.Gateway.Close()
 }
 
