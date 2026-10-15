@@ -97,17 +97,18 @@ type Member struct {
 }
 
 type Channel struct {
-	ID            Snowflake  `json:"id"`
-	Type          int        `json:"type"`
-	GuildID       *Snowflake `json:"guild_id,omitempty"`
-	Position      *int       `json:"position,omitempty"`
-	Name          *string    `json:"name,omitempty"`
-	Topic         *string    `json:"topic,omitempty"`
-	NSFW          bool       `json:"nsfw,omitempty"`
-	LastMessageID *Snowflake `json:"last_message_id,omitempty"`
-	Bitrate       *int       `json:"bitrate,omitempty"`
-	UserLimit     *int       `json:"user_limit,omitempty"`
-	ParentID      *Snowflake `json:"parent_id,omitempty"`
+	ID               Snowflake  `json:"id"`
+	Type             int        `json:"type"`
+	GuildID          *Snowflake `json:"guild_id,omitempty"`
+	Position         *int       `json:"position,omitempty"`
+	Name             *string    `json:"name,omitempty"`
+	Topic            *string    `json:"topic,omitempty"`
+	NSFW             bool       `json:"nsfw,omitempty"`
+	LastMessageID    *Snowflake `json:"last_message_id,omitempty"`
+	Bitrate          *int       `json:"bitrate,omitempty"`
+	UserLimit        *int       `json:"user_limit,omitempty"`
+	RateLimitPerUser *int       `json:"rate_limit_per_user,omitempty"`
+	ParentID         *Snowflake `json:"parent_id,omitempty"`
 }
 
 type Message struct {
