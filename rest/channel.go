@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 
 	"github.com/sfossl/gda/types"
 )
@@ -13,6 +14,7 @@ type CreateChannelPayload struct {
 	Topic                string                      `json:"topic,omitempty"`
 	Bitrate              int                         `json:"bitrate,omitempty"`
 	UserLimit            int                         `json:"user_limit,omitempty"`
+	RateLimitPerUser     *int                        `json:"rate_limit_per_user,omitempty"`
 	ParentID             *types.Snowflake            `json:"parent_id,omitempty"`
 	NSFW                 bool                        `json:"nsfw,omitempty"`
 	Position             *int                        `json:"position,omitempty"`
@@ -27,6 +29,7 @@ type ModifyChannelPayload struct {
 	NSFW                 *bool                       `json:"nsfw,omitempty"`
 	Bitrate              *int                        `json:"bitrate,omitempty"`
 	UserLimit            *int                        `json:"user_limit,omitempty"`
+	RateLimitPerUser     *int                        `json:"rate_limit_per_user,omitempty"`
 	ParentID             *types.Snowflake            `json:"parent_id,omitempty"`
 	PermissionOverwrites []types.PermissionOverwrite `json:"permission_overwrites,omitempty"`
 }
@@ -45,10 +48,15 @@ func (c *Client) GetChannel(ctx context.Context, channelID types.Snowflake) (*ty
 	return &ch, nil
 }
 
-func (c *Client) CreateGuildChannel(ctx context.Context, guildID types.Snowflake, payload CreateChannelPayload) (*types.Channel, error) {
+func (c *Client) CreateGuildChannel(ctx context.Context, guildID types.Snowflake, payload CreateChannelPayload, reason ...string) (*types.Channel, error) {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointCreateGuildChannel(guildID),
 		Body:     payload,
+		Headers:  headers,
 	})
 	if err != nil {
 		return nil, err
@@ -60,10 +68,15 @@ func (c *Client) CreateGuildChannel(ctx context.Context, guildID types.Snowflake
 	return &ch, nil
 }
 
-func (c *Client) ModifyChannel(ctx context.Context, channelID types.Snowflake, payload ModifyChannelPayload) (*types.Channel, error) {
+func (c *Client) ModifyChannel(ctx context.Context, channelID types.Snowflake, payload ModifyChannelPayload, reason ...string) (*types.Channel, error) {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointModifyChannel(channelID),
 		Body:     payload,
+		Headers:  headers,
 	})
 	if err != nil {
 		return nil, err
@@ -75,9 +88,14 @@ func (c *Client) ModifyChannel(ctx context.Context, channelID types.Snowflake, p
 	return &ch, nil
 }
 
-func (c *Client) DeleteChannel(ctx context.Context, channelID types.Snowflake) error {
+func (c *Client) DeleteChannel(ctx context.Context, channelID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointDeleteChannel(channelID),
+		Headers:  headers,
 	})
 	return err
 }
