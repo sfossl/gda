@@ -138,16 +138,26 @@ func (c *Client) GetMessage(ctx context.Context, channelID, messageID types.Snow
 	return &msg, nil
 }
 
-func (c *Client) PinMessage(ctx context.Context, channelID, messageID types.Snowflake) error {
+func (c *Client) PinMessage(ctx context.Context, channelID, messageID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointPinMessage(channelID, messageID),
+		Headers:  headers,
 	})
 	return err
 }
 
-func (c *Client) UnpinMessage(ctx context.Context, channelID, messageID types.Snowflake) error {
+func (c *Client) UnpinMessage(ctx context.Context, channelID, messageID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointUnpinMessage(channelID, messageID),
+		Headers:  headers,
 	})
 	return err
 }
