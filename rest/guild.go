@@ -69,16 +69,26 @@ func (c *Client) ModifyGuildMember(ctx context.Context, guildID, userID types.Sn
 	return &m, nil
 }
 
-func (c *Client) AddGuildMemberRole(ctx context.Context, guildID, userID, roleID types.Snowflake) error {
+func (c *Client) AddGuildMemberRole(ctx context.Context, guildID, userID, roleID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointAddGuildMemberRole(guildID, userID, roleID),
+		Headers:  headers,
 	})
 	return err
 }
 
-func (c *Client) RemoveGuildMemberRole(ctx context.Context, guildID, userID, roleID types.Snowflake) error {
+func (c *Client) RemoveGuildMemberRole(ctx context.Context, guildID, userID, roleID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointRemoveGuildMemberRole(guildID, userID, roleID),
+		Headers:  headers,
 	})
 	return err
 }
@@ -157,10 +167,15 @@ func (c *Client) GetGuildRoles(ctx context.Context, guildID types.Snowflake) ([]
 	return roles, nil
 }
 
-func (c *Client) CreateGuildRole(ctx context.Context, guildID types.Snowflake, payload RolePayload) (*types.Role, error) {
+func (c *Client) CreateGuildRole(ctx context.Context, guildID types.Snowflake, payload RolePayload, reason ...string) (*types.Role, error) {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointCreateGuildRole(guildID),
 		Body:     payload,
+		Headers:  headers,
 	})
 	if err != nil {
 		return nil, err
@@ -172,10 +187,15 @@ func (c *Client) CreateGuildRole(ctx context.Context, guildID types.Snowflake, p
 	return &role, nil
 }
 
-func (c *Client) ModifyGuildRole(ctx context.Context, guildID, roleID types.Snowflake, payload RolePayload) (*types.Role, error) {
+func (c *Client) ModifyGuildRole(ctx context.Context, guildID, roleID types.Snowflake, payload RolePayload, reason ...string) (*types.Role, error) {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	data, err := c.Do(ctx, Request{
 		Endpoint: EndpointModifyGuildRole(guildID, roleID),
 		Body:     payload,
+		Headers:  headers,
 	})
 	if err != nil {
 		return nil, err
@@ -187,9 +207,14 @@ func (c *Client) ModifyGuildRole(ctx context.Context, guildID, roleID types.Snow
 	return &role, nil
 }
 
-func (c *Client) DeleteGuildRole(ctx context.Context, guildID, roleID types.Snowflake) error {
+func (c *Client) DeleteGuildRole(ctx context.Context, guildID, roleID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointDeleteGuildRole(guildID, roleID),
+		Headers:  headers,
 	})
 	return err
 }
