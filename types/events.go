@@ -213,9 +213,11 @@ type Component struct {
 	MinValues   *int           `json:"min_values,omitempty"`
 	MaxValues   *int           `json:"max_values,omitempty"`
 	Value       string         `json:"value,omitempty"`
-	MinLength   *int           `json:"min_length,omitempty"`
-	MaxLength   *int           `json:"max_length,omitempty"`
-	Components  []Component    `json:"components,omitempty"`
+	MinLength    *int           `json:"min_length,omitempty"`
+	MaxLength    *int           `json:"max_length,omitempty"`
+	Required     *bool          `json:"required,omitempty"`
+	ChannelTypes []int          `json:"channel_types,omitempty"`
+	Components   []Component    `json:"components,omitempty"`
 }
 
 type ComponentEmoji struct {
