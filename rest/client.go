@@ -292,9 +292,14 @@ func (c *Client) EditMessage(ctx context.Context, channelID, messageID types.Sno
 	return &msg, nil
 }
 
-func (c *Client) DeleteMessage(ctx context.Context, channelID, messageID types.Snowflake) error {
+func (c *Client) DeleteMessage(ctx context.Context, channelID, messageID types.Snowflake, reason ...string) error {
+	var headers http.Header
+	if len(reason) > 0 && reason[0] != "" {
+		headers = http.Header{"X-Audit-Log-Reason": []string{reason[0]}}
+	}
 	_, err := c.Do(ctx, Request{
 		Endpoint: EndpointDeleteMessage(channelID, messageID),
+		Headers:  headers,
 	})
 	return err
 }
