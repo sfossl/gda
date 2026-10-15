@@ -50,8 +50,21 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	if hash, ok := l.routeToHash[routeKey]; ok {
 		key = hash
 	}
-	b, ok = l.buckets[key]
 	if !ok {
+		if len(l.buckets) > 64 {
+			now := time.Now()
+			for k, bkt := range l.buckets {
+				if !bkt.resetTime.IsZero() && now.After(bkt.resetTime.Add(time.Minute)) {
+					delete(l.buckets, k)
+					for rk, h := range l.routeToHash {
+						if h == k {
+							delete(l.routeToHash, rk)
+						}
+					}
+				}
+			}
+		}
+
 		b = &bucket{
 			remaining: 1,
 			limit:     1,
@@ -62,24 +75,19 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 }
 
 func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
-	for {
-		l.globalMu.RLock()
-		gReset := l.globalReset
-		l.globalMu.RUnlock()
+	l.globalMu.RLock()
+	gReset := l.globalReset
+	l.globalMu.RUnlock()
 
-		now := time.Now()
-		if now.Before(gReset) {
-			wait := gReset.Sub(now)
-			timer := time.NewTimer(wait)
-			select {
-			case <-timer.C:
-			case <-ctx.Done():
-				timer.Stop()
-				return ctx.Err()
-			}
-			continue
+	now := time.Now()
+	if !gReset.IsZero() && now.Before(gReset) {
+		timer := time.NewTimer(gReset.Sub(now))
+		select {
+		case <-timer.C:
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
 		}
-		break
 	}
 
 	b := l.getBucket(routeKey)
