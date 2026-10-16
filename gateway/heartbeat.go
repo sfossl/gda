@@ -19,9 +19,11 @@ type HeartbeatManager struct {
 	ackReceived atomic.Bool
 	sendFunc    func(*int64) error
 	getSeqFunc  func() *int64
-	stopOnce    sync.Once
-	stopChan    chan struct{}
-	running     atomic.Bool
+	stopOnce     sync.Once
+	stopChan     chan struct{}
+	running      atomic.Bool
+	lastSentNano atomic.Int64
+	latencyNano  atomic.Int64
 }
 
 func NewHeartbeatManager(interval time.Duration, sendFunc func(*int64) error, getSeqFunc func() *int64) *HeartbeatManager {
@@ -37,6 +39,13 @@ func NewHeartbeatManager(interval time.Duration, sendFunc func(*int64) error, ge
 
 func (h *HeartbeatManager) Acknowledge() {
 	h.ackReceived.Store(true)
+	if sent := h.lastSentNano.Load(); sent > 0 {
+		h.latencyNano.Store(time.Now().UnixNano() - sent)
+	}
+}
+
+func (h *HeartbeatManager) Latency() time.Duration {
+	return time.Duration(h.latencyNano.Load())
 }
 
 func (h *HeartbeatManager) computeJitter() time.Duration {
@@ -73,6 +82,7 @@ func (h *HeartbeatManager) Start(ctx context.Context) <-chan error {
 		}
 
 		h.ackReceived.Store(false)
+		h.lastSentNano.Store(time.Now().UnixNano())
 		if err := h.sendFunc(h.getSeqFunc()); err != nil {
 			errChan <- err
 			return
@@ -89,6 +99,7 @@ func (h *HeartbeatManager) Start(ctx context.Context) <-chan error {
 					return
 				}
 				h.ackReceived.Store(false)
+				h.lastSentNano.Store(time.Now().UnixNano())
 				if err := h.sendFunc(h.getSeqFunc()); err != nil {
 					errChan <- err
 					return
