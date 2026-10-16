@@ -67,6 +67,11 @@ func NewClient(token string, opts ...ClientOption) *Client {
 		token: token,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 32,
+				IdleConnTimeout:     90 * time.Second,
+			},
 		},
 		limiter:    NewRateLimiter(),
 		maxRetries: 3,
