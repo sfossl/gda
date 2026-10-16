@@ -208,3 +208,11 @@ func (c *Client) String() string {
 	return c.Config.String()
 }
 
+func (c *Client) Latency() time.Duration {
+	if c.Gateway != nil {
+		return c.Gateway.Latency()
+	}
+	return 0
+}
+
+
