@@ -75,19 +75,23 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 }
 
 func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
-	l.globalMu.RLock()
-	gReset := l.globalReset
-	l.globalMu.RUnlock()
+	for {
+		l.globalMu.RLock()
+		gReset := l.globalReset
+		l.globalMu.RUnlock()
 
-	now := time.Now()
-	if !gReset.IsZero() && now.Before(gReset) {
-		timer := time.NewTimer(gReset.Sub(now))
-		select {
-		case <-timer.C:
-		case <-ctx.Done():
-			timer.Stop()
-			return ctx.Err()
+		now := time.Now()
+		if !gReset.IsZero() && now.Before(gReset) {
+			timer := time.NewTimer(gReset.Sub(now))
+			select {
+			case <-timer.C:
+				continue
+			case <-ctx.Done():
+				timer.Stop()
+				return ctx.Err()
+			}
 		}
+		break
 	}
 
 	b := l.getBucket(routeKey)
