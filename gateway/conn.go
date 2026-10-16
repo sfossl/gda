@@ -416,3 +416,12 @@ func (c *Client) Close() error {
 	}
 	return nil
 }
+
+func (c *Client) Latency() time.Duration {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.hm != nil {
+		return c.hm.Latency()
+	}
+	return 0
+}
