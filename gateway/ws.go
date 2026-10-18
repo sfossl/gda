@@ -174,41 +174,43 @@ func (c *Conn) writeFrame(ctx context.Context, opcode byte, payload []byte) erro
 	c.writeMu.Lock()
 	defer c.writeMu.Unlock()
 
-	header := make([]byte, 0, 14)
-	header = append(header, 0x80|opcode)
-
 	length := len(payload)
+	buf := make([]byte, 0, 14+length)
+	buf = append(buf, 0x80|opcode)
+
 	switch {
 	case length < 126:
-		header = append(header, 0x80|byte(length))
+		buf = append(buf, 0x80|byte(length))
 	case length <= 65535:
-		header = append(header, 0x80|126, byte(length>>8), byte(length))
+		buf = append(buf, 0x80|126, byte(length>>8), byte(length))
 	default:
-		header = append(header, 0x80|127)
+		buf = append(buf, 0x80|127)
 		var lenBuf [8]byte
 		binary.BigEndian.PutUint64(lenBuf[:], uint64(length))
-		header = append(header, lenBuf[:]...)
+		buf = append(buf, lenBuf[:]...)
 	}
 
 	var mask [4]byte
 	if _, err := rand.Read(mask[:]); err != nil {
 		return err
 	}
-	header = append(header, mask[:]...)
+	buf = append(buf, mask[:]...)
 
-	maskedPayload := make([]byte, length)
+	headerLen := len(buf)
+	buf = append(buf, payload...)
+	masked := buf[headerLen:]
+
 	maskKey := binary.LittleEndian.Uint32(mask[:])
 	mask64 := uint64(maskKey) | (uint64(maskKey) << 32)
 	i := 0
 	for ; i+8 <= length; i += 8 {
-		val := binary.LittleEndian.Uint64(payload[i : i+8])
-		binary.LittleEndian.PutUint64(maskedPayload[i:i+8], val^mask64)
+		val := binary.LittleEndian.Uint64(masked[i : i+8])
+		binary.LittleEndian.PutUint64(masked[i:i+8], val^mask64)
 	}
 	for ; i < length; i++ {
-		maskedPayload[i] = payload[i] ^ mask[i%4]
+		masked[i] ^= mask[i%4]
 	}
 
-	buf := append(header, maskedPayload...)
 	_ = c.netConn.SetWriteDeadline(time.Now().Add(5 * time.Second))
 	_, err := c.netConn.Write(buf)
 	return err
