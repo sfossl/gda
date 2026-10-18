@@ -68,14 +68,18 @@ func (b *EmbedBuilder) SetTimestamp(t time.Time) *EmbedBuilder {
 	return b
 }
 
-func (b *EmbedBuilder) SetFooter(text, iconURL string) *EmbedBuilder {
+func (b *EmbedBuilder) SetFooter(text string, iconURL ...string) *EmbedBuilder {
 	if utf8.RuneCountInString(text) > 2048 {
 		b.err = ErrEmbedFooterTooLong
 		return b
 	}
+	var icon string
+	if len(iconURL) > 0 {
+		icon = iconURL[0]
+	}
 	b.embed.Footer = &types.EmbedFooter{
 		Text:    text,
-		IconURL: iconURL,
+		IconURL: icon,
 	}
 	return b
 }
@@ -94,10 +98,17 @@ func (b *EmbedBuilder) SetThumbnail(url string) *EmbedBuilder {
 	return b
 }
 
-func (b *EmbedBuilder) SetAuthor(name, url, iconURL string) *EmbedBuilder {
+func (b *EmbedBuilder) SetAuthor(name string, urls ...string) *EmbedBuilder {
 	if utf8.RuneCountInString(name) > 256 {
 		b.err = ErrEmbedAuthorTooLong
 		return b
+	}
+	var url, iconURL string
+	if len(urls) > 0 {
+		url = urls[0]
+	}
+	if len(urls) > 1 {
+		iconURL = urls[1]
 	}
 	b.embed.Author = &types.EmbedAuthor{
 		Name:    name,
