@@ -77,8 +77,7 @@ func TestEventDispatcherPanicRecovery(t *testing.T) {
 }
 
 func TestEventDispatcherContextCancel(t *testing.T) {
-	d := NewEventDispatcher()
-	d.SetMaxConcurrency(1)
+	d := NewEventDispatcher(1)
 
 	started := make(chan struct{})
 	block := make(chan struct{})

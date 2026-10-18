@@ -27,14 +27,6 @@ func NewEventDispatcher(concurrency ...int) *EventDispatcher {
 	}
 }
 
-func (d *EventDispatcher) SetMaxConcurrency(n int) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	if n > 0 {
-		d.sem = make(chan struct{}, n)
-	}
-}
-
 func (d *EventDispatcher) On(event types.EventName, h RawHandler) {
 	d.mu.Lock()
 	defer d.mu.Unlock()

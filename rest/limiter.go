@@ -220,6 +220,9 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 }
 
 func (l *RateLimiter) UpdateWithRetryAfter(routeKey string, retryAfter float64, isGlobal bool) {
+	if retryAfter <= 0 {
+		retryAfter = 0.05
+	}
 	reset := time.Now().Add(time.Duration(retryAfter * float64(time.Second)))
 	if isGlobal {
 		l.globalMu.Lock()

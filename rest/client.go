@@ -188,7 +188,11 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 		resp, err := c.httpClient.Do(httpReq)
 		if err != nil {
 			if attempt < c.maxRetries {
-				time.Sleep(time.Duration(attempt+1) * 100 * time.Millisecond)
+				select {
+				case <-time.After(time.Duration(attempt+1) * 100 * time.Millisecond):
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				}
 				continue
 			}
 			return nil, err
