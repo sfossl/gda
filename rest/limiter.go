@@ -9,9 +9,10 @@ import (
 )
 
 type RateLimiter struct {
-	mu          sync.RWMutex
-	buckets     map[string]*bucket
-	routeToHash map[string]string
+	mu           sync.RWMutex
+	buckets      map[string]*bucket
+	routeToHash  map[string]string
+	hashToRoutes map[string][]string
 
 	globalMu    sync.RWMutex
 	globalReset time.Time
@@ -26,8 +27,9 @@ type bucket struct {
 
 func NewRateLimiter() *RateLimiter {
 	return &RateLimiter{
-		buckets:     make(map[string]*bucket),
-		routeToHash: make(map[string]string),
+		buckets:      make(map[string]*bucket),
+		routeToHash:  make(map[string]string),
+		hashToRoutes: make(map[string][]string),
 	}
 }
 
@@ -50,27 +52,28 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	if hash, ok := l.routeToHash[routeKey]; ok {
 		key = hash
 	}
-	if !ok {
-		if len(l.buckets) > 64 {
-			now := time.Now()
-			for k, bkt := range l.buckets {
-				if !bkt.resetTime.IsZero() && now.After(bkt.resetTime.Add(time.Minute)) {
-					delete(l.buckets, k)
-					for rk, h := range l.routeToHash {
-						if h == k {
-							delete(l.routeToHash, rk)
-						}
-					}
+	if b, ok := l.buckets[key]; ok {
+		return b
+	}
+
+	if len(l.buckets) > 64 {
+		now := time.Now()
+		for k, bkt := range l.buckets {
+			if !bkt.resetTime.IsZero() && now.After(bkt.resetTime.Add(time.Minute)) {
+				delete(l.buckets, k)
+				for _, rk := range l.hashToRoutes[k] {
+					delete(l.routeToHash, rk)
 				}
+				delete(l.hashToRoutes, k)
 			}
 		}
-
-		b = &bucket{
-			remaining: 1,
-			limit:     1,
-		}
-		l.buckets[key] = b
 	}
+
+	b = &bucket{
+		remaining: 1,
+		limit:     1,
+	}
+	l.buckets[key] = b
 	return b
 }
 
@@ -151,7 +154,32 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 	bKey := routeKey
 	if bucketHash != "" {
 		l.mu.Lock()
+		oldHash := l.routeToHash[routeKey]
+		if oldHash != "" && oldHash != bucketHash {
+			routes := l.hashToRoutes[oldHash]
+			for idx, rk := range routes {
+				if rk == routeKey {
+					l.hashToRoutes[oldHash] = append(routes[:idx], routes[idx+1:]...)
+					break
+				}
+			}
+			if len(l.hashToRoutes[oldHash]) == 0 {
+				delete(l.hashToRoutes, oldHash)
+			}
+		}
+
 		l.routeToHash[routeKey] = bucketHash
+		existsInSlice := false
+		for _, rk := range l.hashToRoutes[bucketHash] {
+			if rk == routeKey {
+				existsInSlice = true
+				break
+			}
+		}
+		if !existsInSlice {
+			l.hashToRoutes[bucketHash] = append(l.hashToRoutes[bucketHash], routeKey)
+		}
+
 		if _, exists := l.buckets[bucketHash]; !exists {
 			if existing, ok := l.buckets[routeKey]; ok {
 				l.buckets[bucketHash] = existing
