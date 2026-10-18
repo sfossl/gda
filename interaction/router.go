@@ -100,14 +100,14 @@ func (r *Router) findHandler(in *types.Interaction) Handler {
 		cmdName := in.Data.Name
 		for _, opt := range in.Data.Options {
 			switch opt.Type {
-			case 1:
+			case int(types.OptionTypeSubcommand):
 				subKey := cmdName + ":" + opt.Name
 				if h, ok := r.subcommands[subKey]; ok {
 					return h
 				}
-			case 2:
+			case int(types.OptionTypeSubcommandGroup):
 				for _, subOpt := range opt.Options {
-					if subOpt.Type == 1 {
+					if subOpt.Type == int(types.OptionTypeSubcommand) {
 						groupKey := cmdName + ":" + opt.Name + ":" + subOpt.Name
 						if h, ok := r.subcommands[groupKey]; ok {
 							return h
@@ -168,10 +168,12 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 			return
 		}
 
-		ctx := NewContext(context.WithoutCancel(req.Context()), &in, restClient)
+		handlerCtx, cancel := context.WithTimeout(context.WithoutCancel(req.Context()), 15*time.Minute)
+		ctx := NewContext(handlerCtx, &in, restClient)
 
 		errChan := make(chan error, 1)
 		go func() {
+			defer cancel()
 			defer func() {
 				if rec := recover(); rec != nil {
 					errChan <- fmt.Errorf("panic in interaction handler: %v", rec)
@@ -216,6 +218,7 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 				w.WriteHeader(http.StatusOK)
 			}
 		case <-req.Context().Done():
+			cancel()
 			w.WriteHeader(http.StatusGatewayTimeout)
 		}
 	})
