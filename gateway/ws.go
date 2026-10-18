@@ -35,8 +35,8 @@ const (
 )
 
 var (
-	ErrWSClosed       = errors.New("gda/gateway: websocket connection is closed")
-	ErrWSPayloadLimit = errors.New("gda/gateway: websocket frame payload exceeds 10MB limit")
+	ErrWSClosed       = errors.New("websocket connection is closed")
+	ErrWSPayloadLimit = errors.New("websocket frame payload exceeds 10MB limit")
 )
 
 type CloseError struct {
@@ -142,7 +142,7 @@ func Dial(ctx context.Context, endpointURL string) (*Conn, error) {
 
 	if resp.StatusCode != http.StatusSwitchingProtocols {
 		_ = netConn.Close()
-		return nil, fmt.Errorf("gda/gateway: handshake failed with status %d", resp.StatusCode)
+		return nil, fmt.Errorf("handshake failed with status %d", resp.StatusCode)
 	}
 
 	h := sha1.New()
@@ -151,7 +151,7 @@ func Dial(ctx context.Context, endpointURL string) (*Conn, error) {
 
 	if resp.Header.Get("Sec-WebSocket-Accept") != expectedAccept {
 		_ = netConn.Close()
-		return nil, errors.New("gda/gateway: invalid sec-websocket-accept header")
+		return nil, errors.New("invalid sec-websocket-accept header")
 	}
 
 	_ = netConn.SetDeadline(time.Time{})

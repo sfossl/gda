@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	ErrAlreadyResponded = errors.New("gda/interaction: interaction already acknowledged")
-	ErrModalAfterDefer  = errors.New("gda/interaction: cannot send modal after deferring")
-	ErrNoRestClient     = errors.New("gda/interaction: rest client required for followups")
+	ErrAlreadyResponded = errors.New("interaction already acknowledged")
+	ErrModalAfterDefer  = errors.New("cannot send modal after deferring")
+	ErrNoRestClient     = errors.New("rest client required for followups")
 )
 
 type Response struct {

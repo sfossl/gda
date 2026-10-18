@@ -9,16 +9,16 @@ import (
 )
 
 var (
-	ErrEmbedTitleTooLong       = errors.New("gda/builder: embed title exceeds 256 characters")
-	ErrEmbedDescriptionTooLong = errors.New("gda/builder: embed description exceeds 4096 characters")
-	ErrEmbedTooManyFields      = errors.New("gda/builder: embed exceeds maximum of 25 fields")
-	ErrEmbedFieldNameEmpty     = errors.New("gda/builder: embed field name cannot be empty")
-	ErrEmbedFieldNameTooLong   = errors.New("gda/builder: embed field name exceeds 256 characters")
-	ErrEmbedFieldValueEmpty    = errors.New("gda/builder: embed field value cannot be empty")
-	ErrEmbedFieldValueTooLong  = errors.New("gda/builder: embed field value exceeds 1024 characters")
-	ErrEmbedFooterTooLong      = errors.New("gda/builder: embed footer text exceeds 2048 characters")
-	ErrEmbedAuthorTooLong      = errors.New("gda/builder: embed author name exceeds 256 characters")
-	ErrEmbedTotalLengthExceeded = errors.New("gda/builder: embed total character count exceeds 6000")
+	ErrEmbedTitleTooLong       = errors.New("embed title exceeds 256 characters")
+	ErrEmbedDescriptionTooLong = errors.New("embed description exceeds 4096 characters")
+	ErrEmbedTooManyFields      = errors.New("embed exceeds maximum of 25 fields")
+	ErrEmbedFieldNameEmpty     = errors.New("embed field name cannot be empty")
+	ErrEmbedFieldNameTooLong   = errors.New("embed field name exceeds 256 characters")
+	ErrEmbedFieldValueEmpty    = errors.New("embed field value cannot be empty")
+	ErrEmbedFieldValueTooLong  = errors.New("embed field value exceeds 1024 characters")
+	ErrEmbedFooterTooLong      = errors.New("embed footer text exceeds 2048 characters")
+	ErrEmbedAuthorTooLong      = errors.New("embed author name exceeds 256 characters")
+	ErrEmbedTotalLengthExceeded = errors.New("embed total character count exceeds 6000")
 )
 
 type EmbedBuilder struct {

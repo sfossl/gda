@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrMissingToken = errors.New("gda: bot token is required")
-	ErrInvalidShard = errors.New("gda: shard id must be non-negative and less than shard count")
+	ErrMissingToken = errors.New("bot token is required")
+	ErrInvalidShard = errors.New("shard id must be non-negative and less than shard count")
 )
 
 type Config struct {
@@ -71,4 +71,3 @@ func (c Config) String() string {
 	return fmt.Sprintf("Config{Token:%s, AppID:%s, Intents:%d, Shards:%d/%d}",
 		redacted, c.AppID, c.Intents, c.ShardID, c.ShardCount)
 }
-

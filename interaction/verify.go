@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	ErrInvalidPublicKey = errors.New("gda/interaction: invalid ed25519 public key")
-	ErrInvalidSignature = errors.New("gda/interaction: invalid ed25519 signature")
+	ErrInvalidPublicKey = errors.New("invalid ed25519 public key")
+	ErrInvalidSignature = errors.New("invalid ed25519 signature")
 )
 
 const (

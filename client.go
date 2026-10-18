@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ErrMissingPublicKey = errors.New("gda: public key is required for webhook interactions")
+	ErrMissingPublicKey = errors.New("public key is required for webhook interactions")
 )
 
 type Option func(*Config)

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrHeartbeatACKTimeout = errors.New("gda/gateway: heartbeat ack timeout (zombie socket)")
+	ErrHeartbeatACKTimeout = errors.New("heartbeat ack timeout (zombie socket)")
 )
 
 type HeartbeatManager struct {

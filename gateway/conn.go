@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	ErrFatalGatewayClose = errors.New("gda/gateway: non-reconnectable gateway close code")
+	ErrFatalGatewayClose = errors.New("non-reconnectable gateway close code")
 )
 
 type Config struct {
@@ -73,7 +73,7 @@ func (c *Client) sendJSON(ctx context.Context, v any) error {
 	c.mu.Unlock()
 
 	if conn == nil {
-		return errors.New("gda/gateway: websocket connection is nil")
+		return errors.New("websocket connection is nil")
 	}
 
 	data, err := json.Marshal(v)
@@ -370,7 +370,7 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 			_ = c.sendHeartbeat(connCtx, seqPtr)
 
 		case types.OpcodeReconnect:
-			return errors.New("gda/gateway: discord requested reconnect")
+			return errors.New("discord requested reconnect")
 
 		case types.OpcodeInvalidSession:
 			var resumable bool
@@ -378,7 +378,7 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 			if !resumable {
 				c.state.Reset()
 			}
-			return errors.New("gda/gateway: invalid session")
+			return errors.New("invalid session")
 
 		case types.OpcodeDispatch:
 			if payload.T == nil {
