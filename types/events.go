@@ -307,6 +307,22 @@ type Role struct {
 	Mentionable bool       `json:"mentionable"`
 }
 
+type ApplicationCommandOptionType int
+
+const (
+	OptionTypeSubcommand      ApplicationCommandOptionType = 1
+	OptionTypeSubcommandGroup ApplicationCommandOptionType = 2
+	OptionTypeString          ApplicationCommandOptionType = 3
+	OptionTypeInteger         ApplicationCommandOptionType = 4
+	OptionTypeBoolean         ApplicationCommandOptionType = 5
+	OptionTypeUser            ApplicationCommandOptionType = 6
+	OptionTypeChannel         ApplicationCommandOptionType = 7
+	OptionTypeRole            ApplicationCommandOptionType = 8
+	OptionTypeMentionable     ApplicationCommandOptionType = 9
+	OptionTypeNumber          ApplicationCommandOptionType = 10
+	OptionTypeAttachment      ApplicationCommandOptionType = 11
+)
+
 type ApplicationCommandOption struct {
 	Name         string                     `json:"name"`
 	Type         int                        `json:"type"`
