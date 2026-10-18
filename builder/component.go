@@ -33,7 +33,6 @@ const (
 	ButtonStyleSuccess   ButtonStyle = 3
 	ButtonStyleDanger    ButtonStyle = 4
 	ButtonStyleLink      ButtonStyle = 5
-	ButtonStylePremium   ButtonStyle = 6
 )
 
 type ButtonBuilder struct {
@@ -105,7 +104,6 @@ func (b *ButtonBuilder) Build() (types.Component, error) {
 		if b.comp.CustomID != "" {
 			return types.Component{}, ErrButtonURLNotAllowed
 		}
-	case int(ButtonStylePremium):
 	default:
 		if b.comp.CustomID == "" {
 			return types.Component{}, ErrButtonCustomIDRequired
@@ -152,6 +150,10 @@ func NewRoleSelect(customID string) *SelectMenuBuilder {
 
 func NewChannelSelect(customID string) *SelectMenuBuilder {
 	return newSelectMenu(types.ComponentTypeChannelSelect, customID)
+}
+
+func NewMentionableSelect(customID string) *SelectMenuBuilder {
+	return newSelectMenu(types.ComponentTypeMentionableSelect, customID)
 }
 
 func (b *SelectMenuBuilder) SetPlaceholder(placeholder string) *SelectMenuBuilder {
