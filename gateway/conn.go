@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/url"
 	"runtime"
+	"strconv"
 	"sync"
 	"time"
 
@@ -85,13 +86,16 @@ func (c *Client) sendJSON(ctx context.Context, v any) error {
 }
 
 func (c *Client) sendHeartbeat(ctx context.Context, seq *int64) error {
-	p := types.GatewayPayload{
-		Op: types.OpcodeHeartbeat,
-	}
+	var d json.RawMessage
 	if seq != nil {
-		p.S = seq
+		d = []byte(strconv.FormatInt(*seq, 10))
+	} else {
+		d = []byte("null")
 	}
-	return c.sendJSON(ctx, p)
+	return c.sendJSON(ctx, types.GatewayPayload{
+		Op: types.OpcodeHeartbeat,
+		D:  d,
+	})
 }
 
 func (c *Client) sendIdentify(ctx context.Context) error {
@@ -339,6 +343,9 @@ func (c *Client) runConnection(ctx context.Context, conn *Conn) error {
 			)
 
 			c.mu.Lock()
+			if c.hm != nil {
+				c.hm.Stop()
+			}
 			c.hm = hm
 			c.mu.Unlock()
 
