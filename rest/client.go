@@ -171,6 +171,15 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 			return nil, err
 		}
 
+		for k, values := range req.Headers {
+			if http.CanonicalHeaderKey(k) == "Authorization" || http.CanonicalHeaderKey(k) == "User-Agent" {
+				continue
+			}
+			for _, v := range values {
+				httpReq.Header.Add(k, v)
+			}
+		}
+
 		if c.token != "" {
 			httpReq.Header.Set("Authorization", "Bot "+c.token)
 		}
@@ -178,12 +187,6 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 			httpReq.Header.Set("Content-Type", contentType)
 		}
 		httpReq.Header.Set("User-Agent", types.UserAgent)
-
-		for k, values := range req.Headers {
-			for _, v := range values {
-				httpReq.Header.Add(k, v)
-			}
-		}
 
 		resp, err := c.httpClient.Do(httpReq)
 		if err != nil {
@@ -409,6 +412,17 @@ func (c *Client) BulkOverwriteGuildCommands(ctx context.Context, appID, guildID 
 		return nil, err
 	}
 	return registered, nil
+}
+
+func (c *Client) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	redacted := "[REDACTED]"
+	if c.token == "" {
+		redacted = "[EMPTY]"
+	}
+	return fmt.Sprintf("rest.Client{Token:%s, AppID:%s, BaseURL:%s}", redacted, c.appID, c.baseURL)
 }
 
 
