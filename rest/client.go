@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -89,6 +90,10 @@ func (c *Client) CloseIdleConnections() {
 	}
 }
 
+var (
+	ErrPayloadTooLarge = errors.New("file payload exceeds maximum allowed size (10MB)")
+)
+
 type Request struct {
 	Endpoint Endpoint
 	Body     any
@@ -125,6 +130,7 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 				return nil, err
 			}
 		}
+		var totalFileBytes int64
 		for i, f := range req.Files {
 			partName := fmt.Sprintf("files[%d]", i)
 			fileName := f.Name
@@ -136,8 +142,14 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 				return nil, err
 			}
 			if f.Reader != nil {
-				if _, err := io.Copy(part, f.Reader); err != nil {
+				lr := io.LimitReader(f.Reader, types.MaxPayloadSize+1-totalFileBytes)
+				n, err := io.Copy(part, lr)
+				if err != nil {
 					return nil, err
+				}
+				totalFileBytes += n
+				if totalFileBytes > types.MaxPayloadSize {
+					return nil, ErrPayloadTooLarge
 				}
 			}
 		}
