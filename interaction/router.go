@@ -96,7 +96,7 @@ func (r *Router) findHandler(in *types.Interaction) Handler {
 	}
 
 	switch in.Type {
-	case types.InteractionTypeApplicationCommand:
+	case types.InteractionTypeApplicationCommand, types.InteractionTypeApplicationCommandAutocomplete:
 		cmdName := in.Data.Name
 		for _, opt := range in.Data.Options {
 			switch opt.Type {
