@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrMissingToken = errors.New("bot token is required")
-	ErrInvalidShard = errors.New("shard id must be non-negative and less than shard count")
+	ErrMissingToken         = errors.New("bot token is required")
+	ErrInvalidShard         = errors.New("shard id must be non-negative and less than shard count")
+	ErrMissingMessageIntent = errors.New("missing IntentGuildMessages or IntentDirectMessages for message events")
 )
 
 type Config struct {
@@ -59,6 +60,16 @@ func (c *Config) Validate() error {
 	c.LargeThreshold = min(max(c.LargeThreshold, 50), 250)
 	if c.Intents == 0 {
 		c.Intents = types.IntentsDefault
+	}
+	return nil
+}
+
+func (c Config) ValidateEventIntents(event types.EventName) error {
+	switch event {
+	case types.EventMessageCreate:
+		if !c.Intents.Has(types.IntentGuildMessages) && !c.Intents.Has(types.IntentDirectMessages) {
+			return ErrMissingMessageIntent
+		}
 	}
 	return nil
 }
