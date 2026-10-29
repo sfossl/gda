@@ -127,13 +127,28 @@ func TestGatewayContextReply(t *testing.T) {
 	}
 
 	err := ctx.Reply(Response{Content: "gateway reply"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	if err != ErrNoRestClient {
+		t.Fatalf("expected ErrNoRestClient, got %v", err)
 	}
 
-	err = ctx.Reply(Response{Content: "second reply"})
-	if err != ErrAlreadyResponded {
-		t.Fatalf("expected ErrAlreadyResponded, got %v", err)
+	ctx2 := NewGatewayContext(context.Background(), in, nil)
+	if err := ctx2.Defer(false); err != ErrNoRestClient {
+		t.Fatalf("expected ErrNoRestClient on Defer, got %v", err)
+	}
+
+	ctx3 := NewGatewayContext(context.Background(), in, nil)
+	if err := ctx3.DeferUpdate(); err != ErrNoRestClient {
+		t.Fatalf("expected ErrNoRestClient on DeferUpdate, got %v", err)
+	}
+
+	ctx4 := NewGatewayContext(context.Background(), in, nil)
+	if err := ctx4.UpdateOriginal(Response{Content: "up"}); err != ErrNoRestClient {
+		t.Fatalf("expected ErrNoRestClient on UpdateOriginal, got %v", err)
+	}
+
+	ctx5 := NewGatewayContext(context.Background(), in, nil)
+	if err := ctx5.Modal(builder.Modal{CustomID: "m", Title: "t"}); err != ErrNoRestClient {
+		t.Fatalf("expected ErrNoRestClient on Modal, got %v", err)
 	}
 }
 
