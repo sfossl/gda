@@ -15,6 +15,25 @@ const (
 	StateClosed
 )
 
+func (s GatewayState) String() string {
+	switch s {
+	case StateDisconnected:
+		return "disconnected"
+	case StateConnecting:
+		return "connecting"
+	case StateHandshaking:
+		return "handshaking"
+	case StateReady:
+		return "ready"
+	case StateResuming:
+		return "resuming"
+	case StateClosed:
+		return "closed"
+	default:
+		return "unknown"
+	}
+}
+
 type SessionState struct {
 	mu               sync.RWMutex
 	state            GatewayState
