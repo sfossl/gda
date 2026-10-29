@@ -188,9 +188,11 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 		resp, err := c.httpClient.Do(httpReq)
 		if err != nil {
 			if attempt < c.maxRetries {
+				timer := time.NewTimer(time.Duration(attempt+1) * 100 * time.Millisecond)
 				select {
-				case <-time.After(time.Duration(attempt+1) * 100 * time.Millisecond):
+				case <-timer.C:
 				case <-ctx.Done():
+					timer.Stop()
 					return nil, ctx.Err()
 				}
 				continue
@@ -220,9 +222,11 @@ func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {
 		}
 
 		if resp.StatusCode >= 500 && attempt < c.maxRetries {
+			timer := time.NewTimer(time.Duration(1<<attempt) * 50 * time.Millisecond)
 			select {
-			case <-time.After(time.Duration(1<<attempt) * 50 * time.Millisecond):
+			case <-timer.C:
 			case <-ctx.Done():
+				timer.Stop()
 				return nil, ctx.Err()
 			}
 			continue
