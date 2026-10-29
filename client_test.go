@@ -89,17 +89,9 @@ func TestClientGatewayInteractionBridge(t *testing.T) {
 		return nil
 	})
 
-	in := &types.Interaction{
-		ID:   types.Snowflake(1),
-		Type: types.InteractionTypeApplicationCommand,
-		Data: &types.InteractionData{
-			Name: "ping",
-		},
-	}
-
 	client.Dispatcher.Dispatch(context.Background(), types.EventInteractionCreate, []byte(`{"id":"1","type":2,"data":{"name":"ping"}}`))
 
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		if called.Load() {
 			break
 		}
@@ -109,8 +101,6 @@ func TestClientGatewayInteractionBridge(t *testing.T) {
 	if !called.Load() {
 		t.Fatalf("expected command handler to be called via gateway interaction bridge")
 	}
-
-	_ = in
 }
 
 func TestClientWebhookHandler(t *testing.T) {
@@ -300,7 +290,3 @@ func TestClient_ValidateEventIntents(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
-
-
-
-
