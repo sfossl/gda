@@ -173,13 +173,17 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 
 		errChan := make(chan error, 1)
 		go func() {
-			defer cancel()
 			defer func() {
 				if rec := recover(); rec != nil {
+					cancel()
 					errChan <- fmt.Errorf("panic in interaction handler: %v", rec)
 				}
 			}()
-			errChan <- r.Handle(ctx)
+			err := r.Handle(ctx)
+			if err != nil {
+				cancel()
+			}
+			errChan <- err
 		}()
 
 		var timeoutChan <-chan time.Time
@@ -222,7 +226,6 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 				})
 			}
 		case <-req.Context().Done():
-			cancel()
 			w.WriteHeader(http.StatusGatewayTimeout)
 		}
 	})
