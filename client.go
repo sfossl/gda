@@ -204,7 +204,14 @@ func (c *Client) TriggerTyping(ctx context.Context, channelID types.Snowflake) e
 	return c.REST.TriggerTyping(ctx, channelID)
 }
 
+func (c *Client) ValidateEventIntents(event types.EventName) error {
+	return c.Config.ValidateEventIntents(event)
+}
+
 func (c *Client) String() string {
+	if c == nil {
+		return "<nil>"
+	}
 	return c.Config.String()
 }
 
