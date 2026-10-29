@@ -13,6 +13,7 @@ type RateLimiter struct {
 	buckets      map[string]*bucket
 	routeToHash  map[string]string
 	hashToRoutes map[string][]string
+	lastSweep    time.Time
 
 	globalMu    sync.RWMutex
 	globalReset time.Time
@@ -23,6 +24,7 @@ type bucket struct {
 	remaining int
 	limit     int
 	resetTime time.Time
+	lastUsed  time.Time
 }
 
 func NewRateLimiter() *RateLimiter {
@@ -43,6 +45,9 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	l.mu.RUnlock()
 
 	if ok {
+		b.mu.Lock()
+		b.lastUsed = time.Now()
+		b.mu.Unlock()
 		return b
 	}
 
@@ -53,18 +58,26 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 		key = hash
 	}
 	if b, ok := l.buckets[key]; ok {
+		b.mu.Lock()
+		b.lastUsed = time.Now()
+		b.mu.Unlock()
 		return b
 	}
 
-	if len(l.buckets) > 64 {
-		now := time.Now()
+	now := time.Now()
+	if len(l.buckets) > 64 && (l.lastSweep.IsZero() || now.Sub(l.lastSweep) >= time.Minute) {
+		l.lastSweep = now
 		for k, bkt := range l.buckets {
-			if !bkt.resetTime.IsZero() && now.After(bkt.resetTime.Add(time.Minute)) {
+			bkt.mu.Lock()
+			canDelete := now.Sub(bkt.lastUsed) >= 5*time.Minute && (bkt.resetTime.IsZero() || now.After(bkt.resetTime))
+			bkt.mu.Unlock()
+			if canDelete {
 				delete(l.buckets, k)
 				for _, rk := range l.hashToRoutes[k] {
 					delete(l.routeToHash, rk)
 				}
 				delete(l.hashToRoutes, k)
+				delete(l.routeToHash, k)
 			}
 		}
 	}
@@ -72,6 +85,7 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	b = &bucket{
 		remaining: 1,
 		limit:     1,
+		lastUsed:  now,
 	}
 	l.buckets[key] = b
 	return b
@@ -111,6 +125,7 @@ func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
 
 		if b.remaining > 0 {
 			b.remaining--
+			b.lastUsed = time.Now()
 			return nil
 		}
 
@@ -195,6 +210,7 @@ func (l *RateLimiter) Update(routeKey string, header http.Header) {
 	b := l.getBucket(bKey)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.lastUsed = time.Now()
 
 	if limStr := header.Get("X-RateLimit-Limit"); limStr != "" {
 		if lim, err := strconv.Atoi(limStr); err == nil {
@@ -234,6 +250,7 @@ func (l *RateLimiter) UpdateWithRetryAfter(routeKey string, retryAfter float64, 
 	b.mu.Lock()
 	b.remaining = 0
 	b.resetTime = reset
+	b.lastUsed = time.Now()
 	b.mu.Unlock()
 }
 

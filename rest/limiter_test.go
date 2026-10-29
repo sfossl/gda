@@ -203,3 +203,27 @@ func TestRateLimiterSharedBucket(t *testing.T) {
 	}
 }
 
+func TestRateLimiterBucketSweep(t *testing.T) {
+	limiter := NewRateLimiter()
+
+	oldKey := "POST:/channels/old/messages"
+	oldB := limiter.getBucket(oldKey)
+	oldB.mu.Lock()
+	oldB.lastUsed = time.Now().Add(-10 * time.Minute)
+	oldB.resetTime = time.Time{}
+	oldB.mu.Unlock()
+
+	for i := 0; i < 70; i++ {
+		key := "POST:/channels/" + string(rune('a'+i%26)) + string(rune('0'+i/26)) + "/messages"
+		_ = limiter.getBucket(key)
+	}
+
+	limiter.mu.RLock()
+	_, found := limiter.buckets[oldKey]
+	limiter.mu.RUnlock()
+
+	if found {
+		t.Fatal("expected idle bucket with zero reset time to be swept")
+	}
+}
+
