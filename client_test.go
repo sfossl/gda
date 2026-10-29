@@ -264,4 +264,43 @@ func TestClientAutoDeferWiring(t *testing.T) {
 	}
 }
 
+func TestClient_String(t *testing.T) {
+	var nilClient *Client
+	if nilClient.String() != "<nil>" {
+		t.Fatalf("expected <nil>, got %s", nilClient.String())
+	}
+
+	c, err := New("my-secret-token", WithAppID("app-123"))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	str := c.String()
+	if strings.Contains(str, "my-secret-token") {
+		t.Fatalf("token leaked in Client.String(): %s", str)
+	}
+	if !strings.Contains(str, "[REDACTED]") {
+		t.Fatalf("missing [REDACTED]: %s", str)
+	}
+}
+
+func TestClient_ValidateEventIntents(t *testing.T) {
+	c, err := New("token", WithIntents(types.IntentGuilds))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := c.ValidateEventIntents(types.EventMessageCreate); err != ErrMissingMessageIntent {
+		t.Fatalf("expected ErrMissingMessageIntent, got %v", err)
+	}
+
+	c2, err := New("token", WithIntents(types.IntentGuilds|types.IntentGuildMessages))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := c2.ValidateEventIntents(types.EventMessageCreate); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+
+
 
