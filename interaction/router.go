@@ -205,7 +205,7 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 				w.WriteHeader(http.StatusOK)
 				_ = json.NewEncoder(w).Encode(res)
 			default:
-				w.WriteHeader(http.StatusOK)
+				w.WriteHeader(http.StatusInternalServerError)
 			}
 		case <-timeoutChan:
 			_ = ctx.Defer(false)
@@ -215,7 +215,11 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 				w.WriteHeader(http.StatusOK)
 				_ = json.NewEncoder(w).Encode(res)
 			default:
+				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(w).Encode(types.InteractionResponse{
+					Type: types.CallbackTypeDeferredChannelMessageWithSource,
+				})
 			}
 		case <-req.Context().Done():
 			cancel()

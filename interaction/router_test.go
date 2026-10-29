@@ -217,3 +217,20 @@ func TestRouterWebhookHandlerPanicRecovery(t *testing.T) {
 	}
 }
 
+func TestRouterWebhookHandlerUnacknowledgedResponse(t *testing.T) {
+	router := NewRouter()
+	router.OnCommand("silent", func(ctx *Context) error {
+		return nil
+	})
+
+	h := router.WebhookHandler(nil)
+	cmdBody := []byte(`{"type":2,"data":{"name":"silent"}}`)
+	req := httptest.NewRequest("POST", "/interactions", bytes.NewReader(cmdBody))
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status 500 on unacknowledged interaction, got %d", rr.Code)
+	}
+}
+
