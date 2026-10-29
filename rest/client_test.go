@@ -242,4 +242,58 @@ func TestSendMessageWithFiles(t *testing.T) {
 	}
 }
 
+func TestClient_StringRedaction(t *testing.T) {
+	var nilClient *Client
+	if nilClient.String() != "<nil>" {
+		t.Fatalf("expected <nil>, got %s", nilClient.String())
+	}
+
+	emptyClient := NewClient("")
+	if !strings.Contains(emptyClient.String(), "[EMPTY]") {
+		t.Fatalf("expected [EMPTY], got %s", emptyClient.String())
+	}
+
+	client := NewClient("super-secret-token", WithAppID("app-999"))
+	str := client.String()
+	if strings.Contains(str, "super-secret-token") {
+		t.Fatalf("leaked token in string: %s", str)
+	}
+	if !strings.Contains(str, "[REDACTED]") {
+		t.Fatalf("missing [REDACTED]: %s", str)
+	}
+}
+
+func TestClient_ProtectedHeaders(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bot legitimate-token" {
+			t.Fatalf("authorization header was compromised: %s", r.Header.Get("Authorization"))
+		}
+		if r.Header.Get("User-Agent") != types.UserAgent {
+			t.Fatalf("user agent header was compromised: %s", r.Header.Get("User-Agent"))
+		}
+		if r.Header.Get("X-Audit-Log-Reason") != "valid moderation action" {
+			t.Fatalf("custom audit header missing: %s", r.Header.Get("X-Audit-Log-Reason"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer ts.Close()
+
+	client := NewClient("legitimate-token", WithBaseURL(ts.URL))
+	headers := make(http.Header)
+	headers.Set("Authorization", "Malicious Injected Header")
+	headers.Set("User-Agent", "Malicious UA")
+	headers.Set("X-Audit-Log-Reason", "valid moderation action")
+
+	_, err := client.Do(context.Background(), Request{
+		Endpoint: Endpoint{Method: "POST", Path: "/test", Key: "POST /test"},
+		Headers:  headers,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+
 
