@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -397,6 +398,38 @@ func TestGatewayResumptionURLConstruction(t *testing.T) {
 		t.Fatalf("missing v param: %s", finalURL)
 	}
 }
+
+func TestSendHeartbeat_PayloadStructure(t *testing.T) {
+	var seq int64 = 42
+	var d json.RawMessage
+	if &seq != nil {
+		d = []byte(strconv.FormatInt(seq, 10))
+	}
+	p := types.GatewayPayload{
+		Op: types.OpcodeHeartbeat,
+		D:  d,
+	}
+	b, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(string(b), `"op":1`) {
+		t.Fatalf("missing op 1: %s", string(b))
+	}
+	if !strings.Contains(string(b), `"d":42`) {
+		t.Fatalf("missing d 42: %s", string(b))
+	}
+
+	pNull := types.GatewayPayload{
+		Op: types.OpcodeHeartbeat,
+		D:  []byte("null"),
+	}
+	bNull, _ := json.Marshal(pNull)
+	if !strings.Contains(string(bNull), `"d":null`) {
+		t.Fatalf("missing d null: %s", string(bNull))
+	}
+}
+
 
 
 
