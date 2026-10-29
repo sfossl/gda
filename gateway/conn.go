@@ -183,14 +183,16 @@ func (c *Client) Connect(ctx context.Context) error {
 		c.state.SetState(StateConnecting)
 		conn, err := Dial(ctx, endpointURL)
 		if err != nil {
+			timer := time.NewTimer(backoff)
 			select {
-			case <-time.After(backoff):
+			case <-timer.C:
 				backoff *= 2
 				if backoff > 30*time.Second {
 					backoff = 30 * time.Second
 				}
 				continue
 			case <-ctx.Done():
+				timer.Stop()
 				return ctx.Err()
 			}
 		}
@@ -229,13 +231,15 @@ func (c *Client) Connect(ctx context.Context) error {
 			}
 		}
 
+		timer := time.NewTimer(backoff)
 		select {
-		case <-time.After(backoff):
+		case <-timer.C:
 			backoff *= 2
 			if backoff > 30*time.Second {
 				backoff = 30 * time.Second
 			}
 		case <-ctx.Done():
+			timer.Stop()
 			return ctx.Err()
 		}
 	}
