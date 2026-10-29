@@ -91,7 +91,7 @@ func (l *RateLimiter) getBucket(routeKey string) *bucket {
 	return b
 }
 
-func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
+func (l *RateLimiter) waitGlobal(ctx context.Context) error {
 	for {
 		l.globalMu.RLock()
 		gReset := l.globalReset
@@ -108,7 +108,13 @@ func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
 				return ctx.Err()
 			}
 		}
-		break
+		return nil
+	}
+}
+
+func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
+	if err := l.waitGlobal(ctx); err != nil {
+		return err
 	}
 
 	b := l.getBucket(routeKey)
@@ -117,7 +123,21 @@ func (l *RateLimiter) Acquire(ctx context.Context, routeKey string) error {
 	defer b.mu.Unlock()
 
 	for {
+		l.globalMu.RLock()
+		gReset := l.globalReset
+		l.globalMu.RUnlock()
+
 		now := time.Now()
+		if !gReset.IsZero() && now.Before(gReset) {
+			b.mu.Unlock()
+			if err := l.waitGlobal(ctx); err != nil {
+				b.mu.Lock()
+				return err
+			}
+			b.mu.Lock()
+			continue
+		}
+
 		if !b.resetTime.IsZero() && now.After(b.resetTime) && b.limit > 0 {
 			b.remaining = b.limit
 			b.resetTime = time.Time{}
