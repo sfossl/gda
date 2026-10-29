@@ -253,6 +253,56 @@ func (c *Context) Modal(m builder.Modal) error {
 	return ErrNoRestClient
 }
 
+func (c *Context) Autocomplete(choices []types.Choice) error {
+	if c.deferred.Load() {
+		return ErrAlreadyResponded
+	}
+	if !c.responded.CompareAndSwap(false, true) {
+		return ErrAlreadyResponded
+	}
+
+	ir := types.InteractionResponse{
+		Type: types.CallbackTypeApplicationCommandAutocompleteResult,
+		Data: &types.InteractionResponseData{
+			Choices: choices,
+		},
+	}
+
+	if !c.gatewayMode && c.responseChan != nil {
+		select {
+		case c.responseChan <- ir:
+			return nil
+		default:
+		}
+	}
+
+	if c.restClient != nil {
+		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
+	}
+	return ErrNoRestClient
+}
+
+func (c *Context) FocusedOption() *types.ApplicationCommandOption {
+	if c.Interaction.Data == nil {
+		return nil
+	}
+	return findFocused(c.Interaction.Data.Options)
+}
+
+func findFocused(opts []types.ApplicationCommandOption) *types.ApplicationCommandOption {
+	for i := range opts {
+		if opts[i].Focused {
+			return &opts[i]
+		}
+		if len(opts[i].Options) > 0 {
+			if f := findFocused(opts[i].Options); f != nil {
+				return f
+			}
+		}
+	}
+	return nil
+}
+
 func (c *Context) CommandName() string {
 	if c.Interaction.Data != nil {
 		return c.Interaction.Data.Name
