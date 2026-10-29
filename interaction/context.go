@@ -103,7 +103,7 @@ func (c *Context) Defer(ephemeral bool) error {
 	if c.restClient != nil {
 		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, res)
 	}
-	return nil
+	return ErrNoRestClient
 }
 
 func (c *Context) DeferUpdate() error {
@@ -127,7 +127,7 @@ func (c *Context) DeferUpdate() error {
 	if c.restClient != nil {
 		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, res)
 	}
-	return nil
+	return ErrNoRestClient
 }
 
 func (c *Context) Reply(res Response) error {
@@ -173,7 +173,7 @@ func (c *Context) Reply(res Response) error {
 	if c.restClient != nil {
 		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
 	}
-	return nil
+	return ErrNoRestClient
 }
 
 func (c *Context) UpdateOriginal(res Response) error {
@@ -219,7 +219,7 @@ func (c *Context) UpdateOriginal(res Response) error {
 	if c.restClient != nil {
 		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
 	}
-	return nil
+	return ErrNoRestClient
 }
 
 func (c *Context) Modal(m builder.Modal) error {
@@ -250,7 +250,7 @@ func (c *Context) Modal(m builder.Modal) error {
 	if c.restClient != nil {
 		return c.restClient.CreateInteractionResponse(c.Context(), c.Interaction.ID, c.Interaction.Token, ir)
 	}
-	return nil
+	return ErrNoRestClient
 }
 
 func (c *Context) CommandName() string {
