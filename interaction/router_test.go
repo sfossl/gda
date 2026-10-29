@@ -261,4 +261,56 @@ func TestRouterWebhookHandler_ContextSurvival(t *testing.T) {
 	}
 }
 
+func TestRouterAutocomplete(t *testing.T) {
+	router := NewRouter()
+	var executed bool
+
+	router.OnCommand("search", func(c *Context) error {
+		executed = true
+		focused := c.FocusedOption()
+		if focused == nil || focused.Name != "query" {
+			t.Fatalf("unexpected focused option: %+v", focused)
+		}
+		return c.Autocomplete([]types.Choice{
+			{Name: "Option A", Value: "a"},
+			{Name: "Option B", Value: "b"},
+		})
+	})
+
+	in := &types.Interaction{
+		Type: types.InteractionTypeApplicationCommandAutocomplete,
+		Data: &types.InteractionData{
+			Name: "search",
+			Options: []types.ApplicationCommandOption{
+				{
+					Name:    "query",
+					Value:   "opt",
+					Focused: true,
+				},
+			},
+		},
+	}
+
+	ctx := NewContext(context.Background(), in, nil)
+	if err := router.Handle(ctx); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !executed {
+		t.Fatalf("expected handler to execute for autocomplete")
+	}
+
+	select {
+	case res := <-ctx.ResponseChannel():
+		if res.Type != types.CallbackTypeApplicationCommandAutocompleteResult {
+			t.Fatalf("expected callback type 8, got %d", res.Type)
+		}
+		if len(res.Data.Choices) != 2 {
+			t.Fatalf("expected 2 choices, got %d", len(res.Data.Choices))
+		}
+	default:
+		t.Fatalf("expected response in channel")
+	}
+}
+
+
 
