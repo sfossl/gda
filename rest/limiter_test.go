@@ -227,3 +227,29 @@ func TestRateLimiterBucketSweep(t *testing.T) {
 	}
 }
 
+func TestRateLimiter_GlobalWaitOnBucketWakeup(t *testing.T) {
+	limiter := NewRateLimiter()
+	route := "POST:/channels/99/messages"
+
+	header := make(http.Header)
+	header.Set("X-RateLimit-Remaining", "0")
+	header.Set("X-RateLimit-Reset-After", "0.02")
+	limiter.Update(route, header)
+
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		limiter.UpdateWithRetryAfter(route, 0.08, true)
+	}()
+
+	start := time.Now()
+	if err := limiter.Acquire(context.Background(), route); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	elapsed := time.Since(start)
+
+	if elapsed < 70*time.Millisecond {
+		t.Fatalf("expected delay >= 70ms due to global rate limit, got %v", elapsed)
+	}
+}
+
+
