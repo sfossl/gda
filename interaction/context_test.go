@@ -150,6 +150,36 @@ func TestGatewayContextReply(t *testing.T) {
 	if err := ctx5.Modal(builder.Modal{CustomID: "m", Title: "t"}); err != ErrNoRestClient {
 		t.Fatalf("expected ErrNoRestClient on Modal, got %v", err)
 	}
+
+	ctx6 := NewGatewayContext(context.Background(), in, nil)
+	if err := ctx6.Autocomplete([]types.Choice{{Name: "a", Value: "1"}}); err != ErrNoRestClient {
+		t.Fatalf("expected ErrNoRestClient on Autocomplete, got %v", err)
+	}
 }
+
+func TestContext_FocusedOptionNested(t *testing.T) {
+	in := &types.Interaction{
+		Data: &types.InteractionData{
+			Options: []types.ApplicationCommandOption{
+				{
+					Name: "sub",
+					Type: int(types.OptionTypeSubcommand),
+					Options: []types.ApplicationCommandOption{
+						{
+							Name:    "target",
+							Focused: true,
+						},
+					},
+				},
+			},
+		},
+	}
+	ctx := NewContext(context.Background(), in, nil)
+	f := ctx.FocusedOption()
+	if f == nil || f.Name != "target" {
+		t.Fatalf("expected focused option target, got %+v", f)
+	}
+}
+
 
 
