@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -170,14 +170,17 @@ func (c *Client) Connect(ctx context.Context) error {
 
 		endpointURL := c.cfg.GatewayURL
 		if c.state.CanResume() && c.state.ResumeGatewayURL() != "" {
-			endpointURL = strings.TrimRight(c.state.ResumeGatewayURL(), "/") + "/?v=" + types.APIVersion + "&encoding=json"
+			endpointURL = c.state.ResumeGatewayURL()
 		}
-		if c.cfg.Compress && !strings.Contains(endpointURL, "compress=") {
-			sep := "?"
-			if strings.Contains(endpointURL, "?") {
-				sep = "&"
+		if u, err := url.Parse(endpointURL); err == nil {
+			q := u.Query()
+			q.Set("v", types.APIVersion)
+			q.Set("encoding", "json")
+			if c.cfg.Compress {
+				q.Set("compress", "zlib-stream")
 			}
-			endpointURL += sep + "compress=zlib-stream"
+			u.RawQuery = q.Encode()
+			endpointURL = u.String()
 		}
 
 		c.state.SetState(StateConnecting)
@@ -428,4 +431,16 @@ func (c *Client) Latency() time.Duration {
 		return c.hm.Latency()
 	}
 	return 0
+}
+
+func (c *Client) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	redacted := "[REDACTED]"
+	if c.cfg.Token == "" {
+		redacted = "[EMPTY]"
+	}
+	return fmt.Sprintf("gateway.Client{Token:%s, Shard:%d/%d, State:%s}",
+		redacted, c.cfg.ShardID, c.cfg.ShardCount, c.state.State())
 }
