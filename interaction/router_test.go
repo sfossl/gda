@@ -234,3 +234,31 @@ func TestRouterWebhookHandlerUnacknowledgedResponse(t *testing.T) {
 	}
 }
 
+func TestRouterWebhookHandler_ContextSurvival(t *testing.T) {
+	router := NewRouter()
+	var ctx context.Context
+	done := make(chan struct{})
+
+	router.OnCommand("async", func(c *Context) error {
+		ctx = c.Context()
+		_ = c.Reply(Response{Content: "immediate"})
+		close(done)
+		return nil
+	})
+
+	h := router.WebhookHandler(nil)
+	cmdBody := []byte(`{"type":2,"data":{"name":"async"}}`)
+	req := httptest.NewRequest("POST", "/interactions", bytes.NewReader(cmdBody))
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+
+	<-done
+	if ctx == nil {
+		t.Fatalf("context is nil")
+	}
+	if ctx.Err() != nil {
+		t.Fatalf("context was prematurely canceled: %v", ctx.Err())
+	}
+}
+
+
