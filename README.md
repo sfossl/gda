@@ -71,11 +71,11 @@ func main() {
 
 ## Docs
 
-- [Getting Started](docs/getting-started.md)
-- [Gateway WebSocket](docs/gateway.md)
-- [REST Client](docs/rest.md)
-- [Interactions](docs/interactions.md)
-- [Rate Limits](docs/rate-limits.md)
-- [Builders](docs/builders.md)
-- [Types & Models](docs/types.md)
-- [API Reference](docs/api-reference.md)
+- [Getting Started](.docs/getting-started.md)
+- [Gateway WebSocket](.docs/gateway.md)
+- [REST Client](.docs/rest.md)
+- [Interactions](.docs/interactions.md)
+- [Rate Limits](.docs/rate-limits.md)
+- [Builders](.docs/builders.md)
+- [Types & Models](.docs/types.md)
+- [API Reference](.docs/api-reference.md)
