@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -294,6 +295,29 @@ func TestClient_ProtectedHeaders(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+func TestClient_FilePayloadTooLarge(t *testing.T) {
+	client := NewClient("token")
+	giantReader := io.LimitReader(strings.NewReader(strings.Repeat("a", 1024)), 11<<20)
+
+	zeros := io.MultiReader(
+		bytes.NewReader(make([]byte, 5<<20)),
+		bytes.NewReader(make([]byte, 6<<20)),
+	)
+	_ = giantReader
+
+	_, err := client.Do(context.Background(), Request{
+		Endpoint: Endpoint{Method: "POST", Path: "/test", Key: "POST /test"},
+		Files: []types.File{
+			{Name: "huge.bin", Reader: zeros},
+		},
+	})
+
+	if err != ErrPayloadTooLarge {
+		t.Fatalf("expected ErrPayloadTooLarge, got %v", err)
+	}
+}
+
 
 
 
