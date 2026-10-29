@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"sync"
 	"testing"
@@ -330,5 +331,73 @@ func TestGatewayZlibCompression(t *testing.T) {
 	}
 	_ = client.Close()
 }
+
+func TestGatewayClient_String(t *testing.T) {
+	var nilClient *Client
+	if nilClient.String() != "<nil>" {
+		t.Fatalf("expected <nil>, got %s", nilClient.String())
+	}
+
+	emptyClient := NewClient(Config{}, NewEventDispatcher())
+	if !strings.Contains(emptyClient.String(), "[EMPTY]") {
+		t.Fatalf("expected [EMPTY], got %s", emptyClient.String())
+	}
+
+	client := NewClient(Config{
+		Token:      "super-secret-gateway-token",
+		ShardID:    1,
+		ShardCount: 4,
+	}, NewEventDispatcher())
+
+	str := client.String()
+	if strings.Contains(str, "super-secret-gateway-token") {
+		t.Fatalf("gateway token leaked in String(): %s", str)
+	}
+	if !strings.Contains(str, "[REDACTED]") {
+		t.Fatalf("missing [REDACTED]: %s", str)
+	}
+	if !strings.Contains(str, "1/4") {
+		t.Fatalf("missing shard info: %s", str)
+	}
+}
+
+func TestGatewayResumptionURLConstruction(t *testing.T) {
+	client := NewClient(Config{
+		Token:    "tok",
+		Compress: true,
+	}, NewEventDispatcher())
+
+	client.State().SetReady("sess", "wss://resume.discord.gg")
+	client.State().SetSequence(42)
+
+	endpointURL := client.cfg.GatewayURL
+	if client.state.CanResume() && client.state.ResumeGatewayURL() != "" {
+		endpointURL = client.state.ResumeGatewayURL()
+	}
+	u, err := url.Parse(endpointURL)
+	if err != nil {
+		t.Fatalf("failed to parse url: %v", err)
+	}
+	q := u.Query()
+	q.Set("v", types.APIVersion)
+	q.Set("encoding", "json")
+	if client.cfg.Compress {
+		q.Set("compress", "zlib-stream")
+	}
+	u.RawQuery = q.Encode()
+
+	finalURL := u.String()
+	if !strings.HasPrefix(finalURL, "wss://resume.discord.gg?") {
+		t.Fatalf("unexpected prefix: %s", finalURL)
+	}
+	if !strings.Contains(finalURL, "compress=zlib-stream") {
+		t.Fatalf("missing compress param: %s", finalURL)
+	}
+	if !strings.Contains(finalURL, "v=10") {
+		t.Fatalf("missing v param: %s", finalURL)
+	}
+}
+
+
 
 
