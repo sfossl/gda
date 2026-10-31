@@ -251,5 +251,3 @@ func TestRateLimiter_GlobalWaitOnBucketWakeup(t *testing.T) {
 		t.Fatalf("expected delay >= 70ms due to global rate limit, got %v", elapsed)
 	}
 }
-
-
