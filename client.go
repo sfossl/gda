@@ -221,5 +221,3 @@ func (c *Client) Latency() time.Duration {
 	}
 	return 0
 }
-
-
