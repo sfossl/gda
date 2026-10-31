@@ -97,4 +97,3 @@ func TestEmbedBuilderTotalLengthLimit(t *testing.T) {
 		t.Fatalf("expected ErrEmbedTotalLengthExceeded, got %v", err)
 	}
 }
-
