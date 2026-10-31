@@ -66,4 +66,3 @@ func (i Intent) Remove(targets ...Intent) Intent {
 	}
 	return res
 }
-
