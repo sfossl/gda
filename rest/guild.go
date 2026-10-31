@@ -218,4 +218,3 @@ func (c *Client) DeleteGuildRole(ctx context.Context, guildID, roleID types.Snow
 	})
 	return err
 }
-
