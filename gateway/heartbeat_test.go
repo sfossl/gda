@@ -70,4 +70,3 @@ func TestHeartbeatACKTimeout(t *testing.T) {
 		t.Fatalf("heartbeat watchdog did not trigger within deadline")
 	}
 }
-
