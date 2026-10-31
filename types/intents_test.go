@@ -39,4 +39,3 @@ func TestIntentsDefaultAndNonPrivileged(t *testing.T) {
 		t.Fatalf("non-privileged intents should not contain IntentGuildPresences")
 	}
 }
-
