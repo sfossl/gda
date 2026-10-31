@@ -197,4 +197,3 @@ func TestGuildRoleOperations(t *testing.T) {
 		t.Fatalf("unexpected delete role error: %v", err)
 	}
 }
-
