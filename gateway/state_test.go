@@ -53,4 +53,3 @@ func TestSessionState(t *testing.T) {
 		t.Fatalf("expected hasSequence false after reset")
 	}
 }
-
