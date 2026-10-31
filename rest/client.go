@@ -436,5 +436,3 @@ func (c *Client) String() string {
 	}
 	return fmt.Sprintf("rest.Client{Token:%s, AppID:%s, BaseURL:%s}", redacted, c.appID, c.baseURL)
 }
-
-
