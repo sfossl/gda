@@ -1,9 +1,9 @@
 package builder
 
 import (
+	"github.com/sfossl/gda/types"
 	"strings"
 	"testing"
-	"github.com/sfossl/gda/types"
 )
 
 func TestModalBuilderValid(t *testing.T) {
@@ -105,4 +105,3 @@ func TestTextInputBuilderValueAndLength(t *testing.T) {
 		t.Fatalf("expected max_length 50")
 	}
 }
-
