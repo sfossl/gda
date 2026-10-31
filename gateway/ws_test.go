@@ -230,5 +230,3 @@ func TestNativeWSFragmentedFrames(t *testing.T) {
 		t.Fatalf("expected piece12345, got %s", string(msg))
 	}
 }
-
-
