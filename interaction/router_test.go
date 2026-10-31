@@ -111,7 +111,6 @@ func TestRouterSubcommandGroup(t *testing.T) {
 	}
 }
 
-
 func TestRouterComponentPrefix(t *testing.T) {
 	router := NewRouter()
 	var paramReceived string
@@ -311,6 +310,3 @@ func TestRouterAutocomplete(t *testing.T) {
 		t.Fatalf("expected response in channel")
 	}
 }
-
-
-
