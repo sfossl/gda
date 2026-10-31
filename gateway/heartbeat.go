@@ -15,10 +15,10 @@ var (
 )
 
 type HeartbeatManager struct {
-	interval    time.Duration
-	ackReceived atomic.Bool
-	sendFunc    func(*int64) error
-	getSeqFunc  func() *int64
+	interval     time.Duration
+	ackReceived  atomic.Bool
+	sendFunc     func(*int64) error
+	getSeqFunc   func() *int64
 	stopOnce     sync.Once
 	stopChan     chan struct{}
 	running      atomic.Bool
@@ -121,4 +121,3 @@ func (h *HeartbeatManager) Stop() {
 		close(h.stopChan)
 	})
 }
-
