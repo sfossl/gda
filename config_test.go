@@ -72,4 +72,3 @@ func TestConfigStringRedaction(t *testing.T) {
 		t.Fatalf("expected [REDACTED] in String(): %s", str)
 	}
 }
-
