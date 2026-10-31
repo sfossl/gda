@@ -111,4 +111,3 @@ func TestVerifyMiddleware(t *testing.T) {
 		t.Fatalf("expected status 401 for expired timestamp, got %d", expiredRR.Code)
 	}
 }
-
