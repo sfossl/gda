@@ -8,21 +8,21 @@ import (
 )
 
 var (
-	ErrActionRowEmpty              = errors.New("action row cannot be empty")
-	ErrActionRowTooManyButtons     = errors.New("action row exceeds maximum of 5 buttons")
-	ErrActionRowSelectNotAlone     = errors.New("select menu must be the only component in an action row")
-	ErrActionRowTextInputNotAlone  = errors.New("text input must be the only component in an action row")
-	ErrButtonCustomIDRequired      = errors.New("button custom_id is required for non-link buttons")
-	ErrButtonCustomIDTooLong       = errors.New("button custom_id exceeds 100 characters")
-	ErrButtonLabelTooLong          = errors.New("button label exceeds 80 characters")
-	ErrButtonURLRequired           = errors.New("url is required for link button")
-	ErrButtonURLNotAllowed         = errors.New("url is not allowed on non-link button")
-	ErrSelectCustomIDRequired      = errors.New("select menu custom_id is required")
-	ErrSelectCustomIDTooLong       = errors.New("select menu custom_id exceeds 100 characters")
-	ErrSelectPlaceholderTooLong    = errors.New("select placeholder exceeds 150 characters")
-	ErrSelectTooManyOptions        = errors.New("select menu exceeds maximum of 25 options")
-	ErrSelectOptionLabelRequired   = errors.New("select option label is required")
-	ErrSelectOptionValueRequired   = errors.New("select option value is required")
+	ErrActionRowEmpty             = errors.New("action row cannot be empty")
+	ErrActionRowTooManyButtons    = errors.New("action row exceeds maximum of 5 buttons")
+	ErrActionRowSelectNotAlone    = errors.New("select menu must be the only component in an action row")
+	ErrActionRowTextInputNotAlone = errors.New("text input must be the only component in an action row")
+	ErrButtonCustomIDRequired     = errors.New("button custom_id is required for non-link buttons")
+	ErrButtonCustomIDTooLong      = errors.New("button custom_id exceeds 100 characters")
+	ErrButtonLabelTooLong         = errors.New("button label exceeds 80 characters")
+	ErrButtonURLRequired          = errors.New("url is required for link button")
+	ErrButtonURLNotAllowed        = errors.New("url is not allowed on non-link button")
+	ErrSelectCustomIDRequired     = errors.New("select menu custom_id is required")
+	ErrSelectCustomIDTooLong      = errors.New("select menu custom_id exceeds 100 characters")
+	ErrSelectPlaceholderTooLong   = errors.New("select placeholder exceeds 150 characters")
+	ErrSelectTooManyOptions       = errors.New("select menu exceeds maximum of 25 options")
+	ErrSelectOptionLabelRequired  = errors.New("select option label is required")
+	ErrSelectOptionValueRequired  = errors.New("select option value is required")
 )
 
 type ButtonStyle int
@@ -248,4 +248,3 @@ func NewActionRow(components ...types.Component) (types.Component, error) {
 		Components: components,
 	}, nil
 }
-
