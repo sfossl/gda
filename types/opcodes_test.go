@@ -19,4 +19,3 @@ func TestIsReconnectable(t *testing.T) {
 		t.Fatalf("expected 4014 not to be reconnectable")
 	}
 }
-
