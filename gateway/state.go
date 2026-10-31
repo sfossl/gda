@@ -109,4 +109,3 @@ func (s *SessionState) Reset() {
 	s.hasSequence = false
 	s.state = StateDisconnected
 }
-
