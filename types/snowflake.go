@@ -56,4 +56,3 @@ func (s *Snowflake) UnmarshalJSON(b []byte) error {
 	*s = Snowflake(v)
 	return nil
 }
-
