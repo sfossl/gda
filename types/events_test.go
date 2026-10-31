@@ -66,4 +66,3 @@ func TestMessageUnmarshal(t *testing.T) {
 		t.Fatalf("expected 1 embed titled Reminder")
 	}
 }
-
