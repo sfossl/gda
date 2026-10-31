@@ -429,8 +429,3 @@ func TestSendHeartbeat_PayloadStructure(t *testing.T) {
 		t.Fatalf("missing d null: %s", string(bNull))
 	}
 }
-
-
-
-
-
