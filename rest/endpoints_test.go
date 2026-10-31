@@ -51,4 +51,3 @@ func TestEndpointsFormatting(t *testing.T) {
 		t.Fatalf("unexpected guild command key: %s", cmd.Key)
 	}
 }
-
