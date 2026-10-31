@@ -112,21 +112,21 @@ type Channel struct {
 }
 
 type Message struct {
-	ID              Snowflake       `json:"id"`
-	ChannelID       Snowflake       `json:"channel_id"`
-	GuildID         *Snowflake      `json:"guild_id,omitempty"`
-	Author          User            `json:"author"`
-	Member          *Member         `json:"member,omitempty"`
-	Content         string          `json:"content"`
-	Timestamp       time.Time       `json:"timestamp"`
-	EditedTimestamp *time.Time      `json:"edited_timestamp,omitempty"`
-	TTS             bool            `json:"tts"`
-	MentionEveryone bool            `json:"mention_everyone"`
-	Mentions        []User          `json:"mentions"`
-	Embeds          []Embed         `json:"embeds"`
-	Attachments     []Attachment    `json:"attachments"`
-	Components      []Component     `json:"components"`
-	Flags           MessageFlag     `json:"flags,omitempty"`
+	ID              Snowflake        `json:"id"`
+	ChannelID       Snowflake        `json:"channel_id"`
+	GuildID         *Snowflake       `json:"guild_id,omitempty"`
+	Author          User             `json:"author"`
+	Member          *Member          `json:"member,omitempty"`
+	Content         string           `json:"content"`
+	Timestamp       time.Time        `json:"timestamp"`
+	EditedTimestamp *time.Time       `json:"edited_timestamp,omitempty"`
+	TTS             bool             `json:"tts"`
+	MentionEveryone bool             `json:"mention_everyone"`
+	Mentions        []User           `json:"mentions"`
+	Embeds          []Embed          `json:"embeds"`
+	Attachments     []Attachment     `json:"attachments"`
+	Components      []Component      `json:"components"`
+	Flags           MessageFlag      `json:"flags,omitempty"`
 	Interaction     *MessageInteract `json:"interaction,omitempty"`
 }
 
@@ -148,17 +148,17 @@ type Attachment struct {
 }
 
 type Embed struct {
-	Title       string          `json:"title,omitempty"`
-	Type        string          `json:"type,omitempty"`
-	Description string          `json:"description,omitempty"`
-	URL         string          `json:"url,omitempty"`
-	Timestamp   *time.Time      `json:"timestamp,omitempty"`
-	Color       int             `json:"color,omitempty"`
-	Footer      *EmbedFooter    `json:"footer,omitempty"`
-	Image       *EmbedMedia     `json:"image,omitempty"`
-	Thumbnail   *EmbedMedia     `json:"thumbnail,omitempty"`
-	Author      *EmbedAuthor    `json:"author,omitempty"`
-	Fields      []EmbedField    `json:"fields,omitempty"`
+	Title       string       `json:"title,omitempty"`
+	Type        string       `json:"type,omitempty"`
+	Description string       `json:"description,omitempty"`
+	URL         string       `json:"url,omitempty"`
+	Timestamp   *time.Time   `json:"timestamp,omitempty"`
+	Color       int          `json:"color,omitempty"`
+	Footer      *EmbedFooter `json:"footer,omitempty"`
+	Image       *EmbedMedia  `json:"image,omitempty"`
+	Thumbnail   *EmbedMedia  `json:"thumbnail,omitempty"`
+	Author      *EmbedAuthor `json:"author,omitempty"`
+	Fields      []EmbedField `json:"fields,omitempty"`
 }
 
 type EmbedField struct {
@@ -201,23 +201,23 @@ const (
 )
 
 type Component struct {
-	Type        ComponentType  `json:"type"`
-	CustomID    string         `json:"custom_id,omitempty"`
-	Disabled    bool           `json:"disabled,omitempty"`
-	Style       int            `json:"style,omitempty"`
-	Label       string         `json:"label,omitempty"`
-	Emoji       *ComponentEmoji `json:"emoji,omitempty"`
-	URL         string         `json:"url,omitempty"`
-	Options     []SelectOption `json:"options,omitempty"`
-	Placeholder string         `json:"placeholder,omitempty"`
-	MinValues   *int           `json:"min_values,omitempty"`
-	MaxValues   *int           `json:"max_values,omitempty"`
-	Value       string         `json:"value,omitempty"`
-	MinLength    *int           `json:"min_length,omitempty"`
-	MaxLength    *int           `json:"max_length,omitempty"`
-	Required     *bool          `json:"required,omitempty"`
-	ChannelTypes []int          `json:"channel_types,omitempty"`
-	Components   []Component    `json:"components,omitempty"`
+	Type         ComponentType   `json:"type"`
+	CustomID     string          `json:"custom_id,omitempty"`
+	Disabled     bool            `json:"disabled,omitempty"`
+	Style        int             `json:"style,omitempty"`
+	Label        string          `json:"label,omitempty"`
+	Emoji        *ComponentEmoji `json:"emoji,omitempty"`
+	URL          string          `json:"url,omitempty"`
+	Options      []SelectOption  `json:"options,omitempty"`
+	Placeholder  string          `json:"placeholder,omitempty"`
+	MinValues    *int            `json:"min_values,omitempty"`
+	MaxValues    *int            `json:"max_values,omitempty"`
+	Value        string          `json:"value,omitempty"`
+	MinLength    *int            `json:"min_length,omitempty"`
+	MaxLength    *int            `json:"max_length,omitempty"`
+	Required     *bool           `json:"required,omitempty"`
+	ChannelTypes []int           `json:"channel_types,omitempty"`
+	Components   []Component     `json:"components,omitempty"`
 }
 
 type ComponentEmoji struct {
@@ -247,13 +247,13 @@ const (
 type InteractionCallbackType int
 
 const (
-	CallbackTypePong                                  InteractionCallbackType = 1
-	CallbackTypeChannelMessageWithSource              InteractionCallbackType = 4
-	CallbackTypeDeferredChannelMessageWithSource      InteractionCallbackType = 5
-	CallbackTypeDeferredUpdateMessage                 InteractionCallbackType = 6
-	CallbackTypeUpdateMessage                         InteractionCallbackType = 7
-	CallbackTypeApplicationCommandAutocompleteResult  InteractionCallbackType = 8
-	CallbackTypeModal                                 InteractionCallbackType = 9
+	CallbackTypePong                                 InteractionCallbackType = 1
+	CallbackTypeChannelMessageWithSource             InteractionCallbackType = 4
+	CallbackTypeDeferredChannelMessageWithSource     InteractionCallbackType = 5
+	CallbackTypeDeferredUpdateMessage                InteractionCallbackType = 6
+	CallbackTypeUpdateMessage                        InteractionCallbackType = 7
+	CallbackTypeApplicationCommandAutocompleteResult InteractionCallbackType = 8
+	CallbackTypeModal                                InteractionCallbackType = 9
 )
 
 type Interaction struct {
@@ -357,21 +357,21 @@ const (
 )
 
 type InteractionResponse struct {
-	Type InteractionCallbackType `json:"type"`
+	Type InteractionCallbackType  `json:"type"`
 	Data *InteractionResponseData `json:"data,omitempty"`
 }
 
 type InteractionResponseData struct {
-	TTS             bool          `json:"tts,omitempty"`
-	Content         string        `json:"content,omitempty"`
-	Embeds          []Embed       `json:"embeds,omitempty"`
-	AllowedMentions any           `json:"allowed_mentions,omitempty"`
-	Flags           MessageFlag   `json:"flags,omitempty"`
-	Components      []Component   `json:"components,omitempty"`
-	Choices         []Choice      `json:"choices,omitempty"`
-	CustomID        string        `json:"custom_id,omitempty"`
-	Title           string        `json:"title,omitempty"`
-	Files           []File        `json:"-"`
+	TTS             bool        `json:"tts,omitempty"`
+	Content         string      `json:"content,omitempty"`
+	Embeds          []Embed     `json:"embeds,omitempty"`
+	AllowedMentions any         `json:"allowed_mentions,omitempty"`
+	Flags           MessageFlag `json:"flags,omitempty"`
+	Components      []Component `json:"components,omitempty"`
+	Choices         []Choice    `json:"choices,omitempty"`
+	CustomID        string      `json:"custom_id,omitempty"`
+	Title           string      `json:"title,omitempty"`
+	Files           []File      `json:"-"`
 }
 
 type Choice struct {
@@ -426,4 +426,3 @@ type ApplicationCommand struct {
 	NSFW                     *bool                      `json:"nsfw,omitempty"`
 	Type                     int                        `json:"type,omitempty"`
 }
-
