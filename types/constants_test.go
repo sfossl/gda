@@ -16,4 +16,3 @@ func TestConstants(t *testing.T) {
 		t.Fatalf("unexpected max payload size: %d", MaxPayloadSize)
 	}
 }
-
