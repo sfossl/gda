@@ -312,5 +312,3 @@ func EndpointGetUser(userID types.Snowflake) Endpoint {
 		Key:    "GET:/users",
 	}
 }
-
-
