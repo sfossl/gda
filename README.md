@@ -11,6 +11,9 @@
 - **`gda`**: Direct access to Gateway events, REST routes, and interaction handlers. You control socket lifecycles, HTTP servers, and execution flows directly.
 - **[`gdk`](https://github.com/sfossl/gdk)**: A higher-level interaction framework built on top of `gda`. Choose `gdk` if you want automated slash command registration, cooldowns, role permission guards, and auto-deferrals.
 
+> [!NOTE]
+> `gdk` is currently under development and will be available soon.
+
 ## Install
 
 ```bash
