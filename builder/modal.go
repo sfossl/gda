@@ -12,7 +12,7 @@ var (
 	ErrModalCustomIDTooLong        = errors.New("modal custom_id exceeds 100 characters")
 	ErrModalTitleRequired          = errors.New("modal title is required")
 	ErrModalTitleTooLong           = errors.New("modal title exceeds 45 characters")
-	ErrModalNoComponents          = errors.New("modal must contain at least one text input")
+	ErrModalNoComponents           = errors.New("modal must contain at least one text input")
 	ErrModalTooManyComponents      = errors.New("modal exceeds maximum of 5 text inputs")
 	ErrTextInputCustomIDRequired   = errors.New("text input custom_id is required")
 	ErrTextInputCustomIDTooLong    = errors.New("text input custom_id exceeds 100 characters")
@@ -153,4 +153,3 @@ func (b *ModalBuilder) Build() (Modal, error) {
 		Components: b.components,
 	}, nil
 }
-
