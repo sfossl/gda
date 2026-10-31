@@ -146,4 +146,3 @@ func TestActionRowBuilder(t *testing.T) {
 		t.Fatalf("expected ErrActionRowEmpty, got %v", err)
 	}
 }
-
