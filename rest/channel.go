@@ -210,4 +210,3 @@ func (c *Client) GetUser(ctx context.Context, userID types.Snowflake) (*types.Us
 	}
 	return &u, nil
 }
-
