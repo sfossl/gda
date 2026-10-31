@@ -317,7 +317,3 @@ func TestClient_FilePayloadTooLarge(t *testing.T) {
 		t.Fatalf("expected ErrPayloadTooLarge, got %v", err)
 	}
 }
-
-
-
-
