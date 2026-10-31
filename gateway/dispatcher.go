@@ -98,4 +98,3 @@ func (d *EventDispatcher) Dispatch(ctx context.Context, event types.EventName, d
 		}(h)
 	}
 }
-
