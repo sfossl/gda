@@ -112,4 +112,3 @@ func TestEventDispatcherInitialConcurrency(t *testing.T) {
 		t.Fatalf("expected semaphore capacity 1, got %d", cap(d.sem))
 	}
 }
-
