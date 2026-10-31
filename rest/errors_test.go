@@ -65,4 +65,3 @@ func TestAPIErrorUnmarshal(t *testing.T) {
 		t.Fatalf("expected message Missing Access, got %s", apiErr.Message)
 	}
 }
-
