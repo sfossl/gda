@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	ErrEmbedTitleTooLong       = errors.New("embed title exceeds 256 characters")
-	ErrEmbedDescriptionTooLong = errors.New("embed description exceeds 4096 characters")
-	ErrEmbedTooManyFields      = errors.New("embed exceeds maximum of 25 fields")
-	ErrEmbedFieldNameEmpty     = errors.New("embed field name cannot be empty")
-	ErrEmbedFieldNameTooLong   = errors.New("embed field name exceeds 256 characters")
-	ErrEmbedFieldValueEmpty    = errors.New("embed field value cannot be empty")
-	ErrEmbedFieldValueTooLong  = errors.New("embed field value exceeds 1024 characters")
-	ErrEmbedFooterTooLong      = errors.New("embed footer text exceeds 2048 characters")
-	ErrEmbedAuthorTooLong      = errors.New("embed author name exceeds 256 characters")
+	ErrEmbedTitleTooLong        = errors.New("embed title exceeds 256 characters")
+	ErrEmbedDescriptionTooLong  = errors.New("embed description exceeds 4096 characters")
+	ErrEmbedTooManyFields       = errors.New("embed exceeds maximum of 25 fields")
+	ErrEmbedFieldNameEmpty      = errors.New("embed field name cannot be empty")
+	ErrEmbedFieldNameTooLong    = errors.New("embed field name exceeds 256 characters")
+	ErrEmbedFieldValueEmpty     = errors.New("embed field value cannot be empty")
+	ErrEmbedFieldValueTooLong   = errors.New("embed field value exceeds 1024 characters")
+	ErrEmbedFooterTooLong       = errors.New("embed footer text exceeds 2048 characters")
+	ErrEmbedAuthorTooLong       = errors.New("embed author name exceeds 256 characters")
 	ErrEmbedTotalLengthExceeded = errors.New("embed total character count exceeds 6000")
 )
 
@@ -172,4 +172,3 @@ func (b *EmbedBuilder) Build() (types.Embed, error) {
 
 	return b.embed, nil
 }
-
