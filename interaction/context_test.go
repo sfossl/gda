@@ -180,6 +180,3 @@ func TestContext_FocusedOptionNested(t *testing.T) {
 		t.Fatalf("expected focused option target, got %+v", f)
 	}
 }
-
-
-
