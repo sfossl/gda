@@ -359,4 +359,3 @@ func (c *Context) Followup(res Response) (*types.Message, error) {
 		TTS:        res.TTS,
 	})
 }
-
