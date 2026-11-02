@@ -84,6 +84,7 @@ type User struct {
 }
 
 type Member struct {
+	GuildID      Snowflake   `json:"guild_id,omitempty"`
 	User         *User       `json:"user,omitempty"`
 	Nick         *string     `json:"nick,omitempty"`
 	Avatar       *string     `json:"avatar,omitempty"`
