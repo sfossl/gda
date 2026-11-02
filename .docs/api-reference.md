@@ -243,6 +243,19 @@ func (b *ModalBuilder) AddTextInput(input *TextInputBuilder) *ModalBuilder
 func (b *ModalBuilder) Build() (Modal, error)
 ```
 
+## Avatar Helpers
+
+```go
+type AvatarOptions struct {
+	Size    int
+	Global  bool
+	GuildID Snowflake
+}
+
+func (u *User) AvatarURL(args ...any) string
+func (m *Member) AvatarURL(args ...any) string
+```
+
 ## Errors
 
 ```go
