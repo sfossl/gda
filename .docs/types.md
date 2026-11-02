@@ -103,5 +103,26 @@ Primary Discord data models in `gda/types`:
 - `types.Role`: Guild role with color, hoist, position, and permission bitmask.
 - `types.Interaction`: Inbound slash command, component click, or modal submission payload.
 
+### Avatar URLs
+
+`User` and `Member` provide CDN avatar URL formatting with animated `.gif` detection and default avatar fallback:
+
+```go
+// User avatar with default size (512) or custom size
+avatar := user.AvatarURL()
+avatar1024 := user.AvatarURL(1024)
+
+// Member server avatar with fallback to global user avatar
+memberAvatar := member.AvatarURL()
+
+// Force global avatar or specify explicit options
+globalAvatar := member.AvatarURL(true, 256)
+customAvatar := member.AvatarURL(types.AvatarOptions{
+	Size:    1024,
+	Global:  false,
+	GuildID: guildID,
+})
+```
+
 Previous: [Builders](builders.md)  
 Next: [API Reference](api-reference.md)
