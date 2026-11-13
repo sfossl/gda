@@ -199,26 +199,58 @@ const (
 	ComponentTypeRoleSelect        ComponentType = 6
 	ComponentTypeMentionableSelect ComponentType = 7
 	ComponentTypeChannelSelect     ComponentType = 8
+	ComponentTypeSection           ComponentType = 9
+	ComponentTypeTextDisplay       ComponentType = 10
+	ComponentTypeThumbnail         ComponentType = 11
+	ComponentTypeMediaGallery      ComponentType = 12
+	ComponentTypeFile              ComponentType = 13
+	ComponentTypeSeparator         ComponentType = 14
+	ComponentTypeContainer         ComponentType = 17
 )
 
+type SeparatorSpacing int
+
+const (
+	SeparatorSpacingSmall SeparatorSpacing = 1
+	SeparatorSpacingLarge SeparatorSpacing = 2
+)
+
+type UnfurledMedia struct {
+	URL string `json:"url"`
+}
+
+type MediaGalleryItem struct {
+	Media       UnfurledMedia `json:"media"`
+	Description string        `json:"description,omitempty"`
+	Spoiler     bool          `json:"spoiler,omitempty"`
+}
+
 type Component struct {
-	Type         ComponentType   `json:"type"`
-	CustomID     string          `json:"custom_id,omitempty"`
-	Disabled     bool            `json:"disabled,omitempty"`
-	Style        int             `json:"style,omitempty"`
-	Label        string          `json:"label,omitempty"`
-	Emoji        *ComponentEmoji `json:"emoji,omitempty"`
-	URL          string          `json:"url,omitempty"`
-	Options      []SelectOption  `json:"options,omitempty"`
-	Placeholder  string          `json:"placeholder,omitempty"`
-	MinValues    *int            `json:"min_values,omitempty"`
-	MaxValues    *int            `json:"max_values,omitempty"`
-	Value        string          `json:"value,omitempty"`
-	MinLength    *int            `json:"min_length,omitempty"`
-	MaxLength    *int            `json:"max_length,omitempty"`
-	Required     *bool           `json:"required,omitempty"`
-	ChannelTypes []int           `json:"channel_types,omitempty"`
-	Components   []Component     `json:"components,omitempty"`
+	Type         ComponentType      `json:"type"`
+	CustomID     string             `json:"custom_id,omitempty"`
+	Disabled     bool               `json:"disabled,omitempty"`
+	Style        int                `json:"style,omitempty"`
+	Label        string             `json:"label,omitempty"`
+	Emoji        *ComponentEmoji    `json:"emoji,omitempty"`
+	URL          string             `json:"url,omitempty"`
+	Options      []SelectOption     `json:"options,omitempty"`
+	Placeholder  string             `json:"placeholder,omitempty"`
+	MinValues    *int               `json:"min_values,omitempty"`
+	MaxValues    *int               `json:"max_values,omitempty"`
+	Value        string             `json:"value,omitempty"`
+	MinLength    *int               `json:"min_length,omitempty"`
+	MaxLength    *int               `json:"max_length,omitempty"`
+	Required     *bool              `json:"required,omitempty"`
+	ChannelTypes []int              `json:"channel_types,omitempty"`
+	SKUID        *Snowflake         `json:"sku_id,omitempty"`
+	Content      string             `json:"content,omitempty"`
+	Accessory    *Component         `json:"accessory,omitempty"`
+	Divider      *bool              `json:"divider,omitempty"`
+	Spacing      *int               `json:"spacing,omitempty"`
+	AccentColor  *int               `json:"accent_color,omitempty"`
+	Spoiler      *bool              `json:"spoiler,omitempty"`
+	Items        []MediaGalleryItem `json:"items,omitempty"`
+	Components   []Component        `json:"components,omitempty"`
 }
 
 type ComponentEmoji struct {
@@ -355,6 +387,7 @@ const (
 	MessageFlagFailedToMentionSomeRolesInThread MessageFlag = 1 << 8
 	MessageFlagSuppressNotifications            MessageFlag = 1 << 12
 	MessageFlagIsVoiceMessage                   MessageFlag = 1 << 13
+	MessageFlagIsComponentsV2                   MessageFlag = 1 << 15
 )
 
 type InteractionResponse struct {
