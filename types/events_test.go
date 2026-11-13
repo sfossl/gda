@@ -66,3 +66,50 @@ func TestMessageUnmarshal(t *testing.T) {
 		t.Fatalf("expected 1 embed titled Reminder")
 	}
 }
+
+func TestComponentsV2Unmarshal(t *testing.T) {
+	raw := `{"type":17,"accent_color":5793266,"spoiler":true,"components":[{"type":9,"components":[{"type":10,"content":"Section text"}],"accessory":{"type":2,"style":6,"sku_id":"1088510058284990888"}},{"type":14,"divider":true,"spacing":1}]}`
+	var comp Component
+	if err := json.Unmarshal([]byte(raw), &comp); err != nil {
+		t.Fatalf("unmarshal v2 component error: %v", err)
+	}
+	if comp.Type != ComponentTypeContainer {
+		t.Fatalf("expected container, got %d", comp.Type)
+	}
+	if comp.AccentColor == nil || *comp.AccentColor != 5793266 {
+		t.Fatalf("expected accent color 5793266")
+	}
+	if comp.Spoiler == nil || !*comp.Spoiler {
+		t.Fatalf("expected spoiler true")
+	}
+	if len(comp.Components) != 2 {
+		t.Fatalf("expected 2 children, got %d", len(comp.Components))
+	}
+	sec := comp.Components[0]
+	if sec.Type != ComponentTypeSection || sec.Accessory == nil {
+		t.Fatalf("expected section with accessory")
+	}
+	if sec.Accessory.SKUID == nil || *sec.Accessory.SKUID != Snowflake(1088510058284990888) {
+		t.Fatalf("expected premium button sku id")
+	}
+	sep := comp.Components[1]
+	if sep.Type != ComponentTypeSeparator || sep.Divider == nil || !*sep.Divider || sep.Spacing == nil || *sep.Spacing != int(SeparatorSpacingSmall) {
+		t.Fatalf("expected separator with divider and spacing")
+	}
+
+	data, err := json.Marshal(comp)
+	if err != nil {
+		t.Fatalf("marshal v2 component error: %v", err)
+	}
+	var roundtrip Component
+	if err := json.Unmarshal(data, &roundtrip); err != nil {
+		t.Fatalf("unmarshal roundtrip error: %v", err)
+	}
+	if roundtrip.Type != ComponentTypeContainer || len(roundtrip.Components) != 2 {
+		t.Fatalf("roundtrip mismatch")
+	}
+
+	if MessageFlagIsComponentsV2 != 1<<15 {
+		t.Fatalf("expected flag 1<<15, got %d", MessageFlagIsComponentsV2)
+	}
+}
