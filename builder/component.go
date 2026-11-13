@@ -33,6 +33,7 @@ const (
 	ButtonStyleSuccess   ButtonStyle = 3
 	ButtonStyleDanger    ButtonStyle = 4
 	ButtonStyleLink      ButtonStyle = 5
+	ButtonStylePremium   ButtonStyle = 6
 )
 
 type ButtonBuilder struct {
