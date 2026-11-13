@@ -227,6 +227,7 @@ type MediaGalleryItem struct {
 
 type Component struct {
 	Type         ComponentType      `json:"type"`
+	ID           *int               `json:"id,omitempty"`
 	CustomID     string             `json:"custom_id,omitempty"`
 	Disabled     bool               `json:"disabled,omitempty"`
 	Style        int                `json:"style,omitempty"`
@@ -250,6 +251,11 @@ type Component struct {
 	AccentColor  *int               `json:"accent_color,omitempty"`
 	Spoiler      *bool              `json:"spoiler,omitempty"`
 	Items        []MediaGalleryItem `json:"items,omitempty"`
+	Media        *UnfurledMedia     `json:"media,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	File         *UnfurledMedia     `json:"file,omitempty"`
+	Name         string             `json:"name,omitempty"`
+	Size         *int               `json:"size,omitempty"`
 	Components   []Component        `json:"components,omitempty"`
 }
 
