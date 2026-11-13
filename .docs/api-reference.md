@@ -147,6 +147,15 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 
 ### `interaction.Context`
 ```go
+type Response struct {
+	Content    string
+	Embeds     []types.Embed
+	Components []types.Component
+	Ephemeral  bool
+	Flags      types.MessageFlag
+	TTS        bool
+}
+
 func NewContext(ctx context.Context, in *types.Interaction, restClient *rest.Client) *Context
 func NewGatewayContext(ctx context.Context, in *types.Interaction, restClient *rest.Client) *Context
 func (c *Context) Context() context.Context
@@ -209,6 +218,7 @@ func (b *ButtonBuilder) SetStyle(style ButtonStyle) *ButtonBuilder
 func (b *ButtonBuilder) SetCustomID(customID string) *ButtonBuilder
 func (b *ButtonBuilder) SetLabel(label string) *ButtonBuilder
 func (b *ButtonBuilder) SetURL(url string) *ButtonBuilder
+func (b *ButtonBuilder) SetSKUID(skuID types.Snowflake) *ButtonBuilder
 func (b *ButtonBuilder) SetDisabled(disabled bool) *ButtonBuilder
 func (b *ButtonBuilder) SetEmoji(name string, id *types.Snowflake, animated bool) *ButtonBuilder
 func (b *ButtonBuilder) Build() (types.Component, error)
@@ -254,6 +264,47 @@ type AvatarOptions struct {
 
 func (u *User) AvatarURL(args ...any) string
 func (m *Member) AvatarURL(args ...any) string
+```
+
+## Types & Constants
+
+```go
+type ComponentType int
+
+const (
+	ComponentTypeActionRow         ComponentType = 1
+	ComponentTypeButton            ComponentType = 2
+	ComponentTypeStringSelect      ComponentType = 3
+	ComponentTypeTextInput         ComponentType = 4
+	ComponentTypeUserSelect        ComponentType = 5
+	ComponentTypeRoleSelect        ComponentType = 6
+	ComponentTypeMentionableSelect ComponentType = 7
+	ComponentTypeChannelSelect     ComponentType = 8
+	ComponentTypeSection           ComponentType = 9
+	ComponentTypeTextDisplay       ComponentType = 10
+	ComponentTypeThumbnail         ComponentType = 11
+	ComponentTypeMediaGallery      ComponentType = 12
+	ComponentTypeFile              ComponentType = 13
+	ComponentTypeSeparator         ComponentType = 14
+	ComponentTypeContainer         ComponentType = 17
+)
+
+type MessageFlag uint64
+
+const (
+	MessageFlagCrossposted                      MessageFlag = 1 << 0
+	MessageFlagIsCrosspost                      MessageFlag = 1 << 1
+	MessageFlagSuppressEmbeds                   MessageFlag = 1 << 2
+	MessageFlagSourceMessageDeleted             MessageFlag = 1 << 3
+	MessageFlagUrgent                           MessageFlag = 1 << 4
+	MessageFlagHasThread                        MessageFlag = 1 << 5
+	MessageFlagEphemeral                        MessageFlag = 1 << 6
+	MessageFlagLoading                          MessageFlag = 1 << 7
+	MessageFlagFailedToMentionSomeRolesInThread MessageFlag = 1 << 8
+	MessageFlagSuppressNotifications            MessageFlag = 1 << 12
+	MessageFlagIsVoiceMessage                   MessageFlag = 1 << 13
+	MessageFlagIsComponentsV2                   MessageFlag = 1 << 15
+)
 ```
 
 ## Errors
