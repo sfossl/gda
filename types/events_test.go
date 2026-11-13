@@ -68,7 +68,7 @@ func TestMessageUnmarshal(t *testing.T) {
 }
 
 func TestComponentsV2Unmarshal(t *testing.T) {
-	raw := `{"type":17,"accent_color":5793266,"spoiler":true,"components":[{"type":9,"components":[{"type":10,"content":"Section text"}],"accessory":{"type":2,"style":6,"sku_id":"1088510058284990888"}},{"type":14,"divider":true,"spacing":1}]}`
+	raw := `{"type":17,"id":1,"accent_color":5793266,"spoiler":true,"components":[{"type":9,"id":2,"components":[{"type":10,"id":3,"content":"Section text"}],"accessory":{"type":11,"id":4,"media":{"url":"https://example.com/thumb.png"},"description":"thumb"}},{"type":14,"id":5,"divider":true,"spacing":1},{"type":12,"id":6,"items":[{"media":{"url":"https://example.com/gallery.png"},"description":"photo"}]},{"type":13,"id":7,"file":{"url":"attachment://doc.pdf"},"name":"doc.pdf","size":2048}]}`
 	var comp Component
 	if err := json.Unmarshal([]byte(raw), &comp); err != nil {
 		t.Fatalf("unmarshal v2 component error: %v", err)
@@ -76,25 +76,36 @@ func TestComponentsV2Unmarshal(t *testing.T) {
 	if comp.Type != ComponentTypeContainer {
 		t.Fatalf("expected container, got %d", comp.Type)
 	}
+	if comp.ID == nil || *comp.ID != 1 {
+		t.Fatalf("expected component id 1")
+	}
 	if comp.AccentColor == nil || *comp.AccentColor != 5793266 {
 		t.Fatalf("expected accent color 5793266")
 	}
 	if comp.Spoiler == nil || !*comp.Spoiler {
 		t.Fatalf("expected spoiler true")
 	}
-	if len(comp.Components) != 2 {
-		t.Fatalf("expected 2 children, got %d", len(comp.Components))
+	if len(comp.Components) != 4 {
+		t.Fatalf("expected 4 children, got %d", len(comp.Components))
 	}
 	sec := comp.Components[0]
 	if sec.Type != ComponentTypeSection || sec.Accessory == nil {
 		t.Fatalf("expected section with accessory")
 	}
-	if sec.Accessory.SKUID == nil || *sec.Accessory.SKUID != Snowflake(1088510058284990888) {
-		t.Fatalf("expected premium button sku id")
+	if sec.Accessory.Type != ComponentTypeThumbnail || sec.Accessory.Media == nil || sec.Accessory.Media.URL != "https://example.com/thumb.png" {
+		t.Fatalf("expected thumbnail accessory")
 	}
 	sep := comp.Components[1]
 	if sep.Type != ComponentTypeSeparator || sep.Divider == nil || !*sep.Divider || sep.Spacing == nil || *sep.Spacing != int(SeparatorSpacingSmall) {
 		t.Fatalf("expected separator with divider and spacing")
+	}
+	gal := comp.Components[2]
+	if gal.Type != ComponentTypeMediaGallery || len(gal.Items) != 1 || gal.Items[0].Media.URL != "https://example.com/gallery.png" {
+		t.Fatalf("expected media gallery item")
+	}
+	fil := comp.Components[3]
+	if fil.Type != ComponentTypeFile || fil.File == nil || fil.Name != "doc.pdf" || fil.Size == nil || *fil.Size != 2048 {
+		t.Fatalf("expected file component")
 	}
 
 	data, err := json.Marshal(comp)
@@ -105,7 +116,7 @@ func TestComponentsV2Unmarshal(t *testing.T) {
 	if err := json.Unmarshal(data, &roundtrip); err != nil {
 		t.Fatalf("unmarshal roundtrip error: %v", err)
 	}
-	if roundtrip.Type != ComponentTypeContainer || len(roundtrip.Components) != 2 {
+	if roundtrip.Type != ComponentTypeContainer || len(roundtrip.Components) != 4 {
 		t.Fatalf("roundtrip mismatch")
 	}
 
