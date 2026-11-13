@@ -91,6 +91,62 @@ const (
 
 Calling `.Has(...)` automatically evaluates to `true` if `PermissionAdministrator` is present in the bitmask.
 
+## Message Flags
+
+Bitwise flags representing message states and features:
+
+```go
+const (
+	MessageFlagCrossposted                      MessageFlag = 1 << 0
+	MessageFlagIsCrosspost                      MessageFlag = 1 << 1
+	MessageFlagSuppressEmbeds                   MessageFlag = 1 << 2
+	MessageFlagSourceMessageDeleted             MessageFlag = 1 << 3
+	MessageFlagUrgent                           MessageFlag = 1 << 4
+	MessageFlagHasThread                        MessageFlag = 1 << 5
+	MessageFlagEphemeral                        MessageFlag = 1 << 6
+	MessageFlagLoading                          MessageFlag = 1 << 7
+	MessageFlagFailedToMentionSomeRolesInThread MessageFlag = 1 << 8
+	MessageFlagSuppressNotifications            MessageFlag = 1 << 12
+	MessageFlagIsVoiceMessage                   MessageFlag = 1 << 13
+	MessageFlagIsComponentsV2                   MessageFlag = 1 << 15
+)
+```
+
+Setting `MessageFlagIsComponentsV2` (32768) enables modern Discord Components V2 rendering and disables legacy top-level embeds and content.
+
+## Components
+
+The `types.Component` struct maps both legacy V1 components and modern V2 layout structures:
+
+```go
+const (
+	ComponentTypeActionRow         ComponentType = 1
+	ComponentTypeButton            ComponentType = 2
+	ComponentTypeStringSelect      ComponentType = 3
+	ComponentTypeTextInput         ComponentType = 4
+	ComponentTypeUserSelect        ComponentType = 5
+	ComponentTypeRoleSelect        ComponentType = 6
+	ComponentTypeMentionableSelect ComponentType = 7
+	ComponentTypeChannelSelect     ComponentType = 8
+	ComponentTypeSection           ComponentType = 9
+	ComponentTypeTextDisplay       ComponentType = 10
+	ComponentTypeThumbnail         ComponentType = 11
+	ComponentTypeMediaGallery      ComponentType = 12
+	ComponentTypeFile              ComponentType = 13
+	ComponentTypeSeparator         ComponentType = 14
+	ComponentTypeContainer         ComponentType = 17
+)
+
+const (
+	SeparatorSpacingSmall SeparatorSpacing = 1
+	SeparatorSpacingLarge SeparatorSpacing = 2
+)
+```
+
+Supporting media structures:
+- `types.UnfurledMedia`: Holds a media `URL` string.
+- `types.MediaGalleryItem`: Image item with `Media`, `Description`, and `Spoiler` flag.
+
 ## Models
 
 Primary Discord data models in `gda/types`:
