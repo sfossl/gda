@@ -74,6 +74,56 @@ func TestButtonBuilderLimits(t *testing.T) {
 	}
 }
 
+func TestButtonBuilderPremium(t *testing.T) {
+	sku := types.Snowflake(1088510058284990888)
+	btn, err := NewButton().
+		SetStyle(ButtonStylePremium).
+		SetSKUID(sku).
+		Build()
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if btn.Style != int(ButtonStylePremium) {
+		t.Fatalf("expected style premium, got %d", btn.Style)
+	}
+	if btn.SKUID == nil || *btn.SKUID != sku {
+		t.Fatalf("expected sku id %v, got %v", sku, btn.SKUID)
+	}
+
+	_, err = NewButton().SetStyle(ButtonStylePremium).Build()
+	if err != ErrButtonSKUIDRequired {
+		t.Fatalf("expected ErrButtonSKUIDRequired, got %v", err)
+	}
+
+	_, err = NewButton().
+		SetStyle(ButtonStylePremium).
+		SetSKUID(sku).
+		SetCustomID("custom_premium").
+		Build()
+	if err != ErrButtonPremiumNotAllowed {
+		t.Fatalf("expected ErrButtonPremiumNotAllowed, got %v", err)
+	}
+
+	_, err = NewButton().
+		SetStyle(ButtonStylePremium).
+		SetSKUID(sku).
+		SetURL("https://example.com").
+		Build()
+	if err != ErrButtonPremiumNotAllowed {
+		t.Fatalf("expected ErrButtonPremiumNotAllowed, got %v", err)
+	}
+
+	_, err = NewButton().
+		SetStyle(ButtonStylePremium).
+		SetSKUID(sku).
+		SetLabel("Buy Now").
+		Build()
+	if err != ErrButtonPremiumNotAllowed {
+		t.Fatalf("expected ErrButtonPremiumNotAllowed, got %v", err)
+	}
+}
+
 func TestSelectMenuBuilder(t *testing.T) {
 	sel, err := NewStringSelect("select_roles").
 		SetPlaceholder("Choose a role").
