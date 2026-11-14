@@ -25,6 +25,16 @@ const (
 	EventAutoModerationRuleUpdate    EventName = "AUTO_MODERATION_RULE_UPDATE"
 	EventAutoModerationRuleDelete    EventName = "AUTO_MODERATION_RULE_DELETE"
 	EventAutoModerationActionExecute EventName = "AUTO_MODERATION_ACTION_EXECUTION"
+	EventGuildMemberAdd              EventName = "GUILD_MEMBER_ADD"
+	EventGuildMemberUpdate           EventName = "GUILD_MEMBER_UPDATE"
+	EventGuildMemberRemove           EventName = "GUILD_MEMBER_REMOVE"
+	EventGuildBanAdd                 EventName = "GUILD_BAN_ADD"
+	EventGuildBanRemove              EventName = "GUILD_BAN_REMOVE"
+	EventMessageReactionAdd          EventName = "MESSAGE_REACTION_ADD"
+	EventMessageReactionRemove       EventName = "MESSAGE_REACTION_REMOVE"
+	EventMessageReactionRemoveAll    EventName = "MESSAGE_REACTION_REMOVE_ALL"
+	EventTypingStart                 EventName = "TYPING_START"
+	EventUserUpdate                  EventName = "USER_UPDATE"
 )
 
 type GatewayPayload struct {
@@ -113,22 +123,26 @@ type Channel struct {
 }
 
 type Message struct {
-	ID              Snowflake        `json:"id"`
-	ChannelID       Snowflake        `json:"channel_id"`
-	GuildID         *Snowflake       `json:"guild_id,omitempty"`
-	Author          User             `json:"author"`
-	Member          *Member          `json:"member,omitempty"`
-	Content         string           `json:"content"`
-	Timestamp       time.Time        `json:"timestamp"`
-	EditedTimestamp *time.Time       `json:"edited_timestamp,omitempty"`
-	TTS             bool             `json:"tts"`
-	MentionEveryone bool             `json:"mention_everyone"`
-	Mentions        []User           `json:"mentions"`
-	Embeds          []Embed          `json:"embeds"`
-	Attachments     []Attachment     `json:"attachments"`
-	Components      []Component      `json:"components"`
-	Flags           MessageFlag      `json:"flags,omitempty"`
-	Interaction     *MessageInteract `json:"interaction,omitempty"`
+	ID                Snowflake         `json:"id"`
+	ChannelID         Snowflake         `json:"channel_id"`
+	GuildID           *Snowflake        `json:"guild_id,omitempty"`
+	Author            User              `json:"author"`
+	Member            *Member           `json:"member,omitempty"`
+	Content           string            `json:"content"`
+	Timestamp         time.Time         `json:"timestamp"`
+	EditedTimestamp   *time.Time        `json:"edited_timestamp,omitempty"`
+	TTS               bool              `json:"tts"`
+	MentionEveryone   bool              `json:"mention_everyone"`
+	Mentions          []User            `json:"mentions"`
+	Embeds            []Embed           `json:"embeds"`
+	Attachments       []Attachment      `json:"attachments"`
+	Components        []Component       `json:"components"`
+	Flags             MessageFlag       `json:"flags,omitempty"`
+	Interaction       *MessageInteract  `json:"interaction,omitempty"`
+	Type              int               `json:"type"`
+	MessageReference  *MessageReference `json:"message_reference,omitempty"`
+	ReferencedMessage *Message          `json:"referenced_message,omitempty"`
+	Thread            *Channel          `json:"thread,omitempty"`
 }
 
 type MessageInteract struct {
@@ -146,6 +160,7 @@ type Attachment struct {
 	Size        int       `json:"size"`
 	URL         string    `json:"url"`
 	ProxyURL    string    `json:"proxy_url"`
+	Flags       *int      `json:"flags,omitempty"`
 }
 
 type Embed struct {
