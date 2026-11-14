@@ -74,7 +74,7 @@ Each event is dispatched in its own goroutine bounded by a concurrency semaphore
 Update bot status and activity over the active WebSocket:
 
 ```go
-idleSince := int(time.Now().UnixMilli())
+idleSince := time.Now().UnixMilli()
 
 err := client.UpdatePresence(ctx, types.PresenceUpdate{
 	Since:  &idleSince,
