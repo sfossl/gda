@@ -22,6 +22,13 @@ msg, err := client.REST.SendMessage(ctx, channelID, rest.MessagePayload{
 	Embeds:  []types.Embed{embed},
 })
 
+// send message with inline reply and silent mentions
+reply, err := client.REST.SendMessage(ctx, channelID, rest.MessagePayload{
+	Content: "reply text",
+	MessageReference: &types.MessageReference{MessageID: &targetMessageID},
+	AllowedMentions: types.AllowedMentions{Parse: []string{}},
+})
+
 // edit message
 edited, err := client.REST.EditMessage(ctx, channelID, messageID, rest.MessagePayload{
 	Content: "updated",
@@ -37,6 +44,15 @@ msg, err := client.REST.GetMessage(ctx, channelID, messageID)
 ## Channels
 
 ```go
+newChan, err := client.REST.CreateGuildChannel(ctx, guildID, rest.CreateChannelPayload{
+	Name: "announcements",
+	Type: 0,
+})
+
+updatedChan, err := client.REST.ModifyChannel(ctx, channelID, rest.ModifyChannelPayload{
+	Name: &updatedName,
+})
+
 channel, err := client.REST.GetChannel(ctx, channelID)
 err = client.REST.DeleteChannel(ctx, channelID, "audit log reason")
 
