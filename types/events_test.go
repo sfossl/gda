@@ -54,7 +54,7 @@ func TestInteractionUnmarshal(t *testing.T) {
 }
 
 func TestMessageUnmarshal(t *testing.T) {
-	raw := `{"id":"222333444555666777","channel_id":"333444555666777888","author":{"id":"444555666777888999","username":"author","discriminator":"0001"},"content":"hello world","timestamp":"2026-10-13T10:00:00Z","tts":false,"mention_everyone":false,"mentions":[],"embeds":[{"title":"Reminder","description":"Meeting in 5m","color":5793266}],"attachments":[],"components":[]}`
+	raw := `{"id":"222333444555666777","channel_id":"333444555666777888","author":{"id":"444555666777888999","username":"author","discriminator":"0001"},"content":"hello world","timestamp":"2026-10-13T10:00:00Z","tts":false,"mention_everyone":false,"mentions":[],"embeds":[{"title":"Reminder","description":"Meeting in 5m","color":5793266}],"attachments":[{"id":"555","filename":"clip.mp4","size":1024,"url":"https://cdn.discordapp.com/clip.mp4","proxy_url":"https://media.discordapp.net/clip.mp4","flags":4}],"components":[]}`
 	var msg Message
 	if err := json.Unmarshal([]byte(raw), &msg); err != nil {
 		t.Fatalf("unmarshal message error: %v", err)
@@ -64,6 +64,9 @@ func TestMessageUnmarshal(t *testing.T) {
 	}
 	if len(msg.Embeds) != 1 || msg.Embeds[0].Title != "Reminder" {
 		t.Fatalf("expected 1 embed titled Reminder")
+	}
+	if len(msg.Attachments) != 1 || msg.Attachments[0].Flags == nil || *msg.Attachments[0].Flags != 4 {
+		t.Fatalf("expected attachment with flag 4, got: %+v", msg.Attachments)
 	}
 }
 
@@ -122,5 +125,42 @@ func TestComponentsV2Unmarshal(t *testing.T) {
 
 	if MessageFlagIsComponentsV2 != 1<<15 {
 		t.Fatalf("expected flag 1<<15, got %d", MessageFlagIsComponentsV2)
+	}
+}
+
+func TestMessageReplyAndMentionsUnmarshal(t *testing.T) {
+	raw := `{"id":"100","channel_id":"200","type":19,"content":"reply text","author":{"id":"300","username":"user","discriminator":"0001"},"message_reference":{"message_id":"99","channel_id":"200"},"referenced_message":{"id":"99","channel_id":"200","content":"original","author":{"id":"400","username":"parent","discriminator":"0001"}}}`
+	var msg Message
+	if err := json.Unmarshal([]byte(raw), &msg); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if msg.Type != 19 {
+		t.Fatalf("expected message type 19, got %d", msg.Type)
+	}
+	if msg.MessageReference == nil || msg.MessageReference.MessageID == nil || *msg.MessageReference.MessageID != 99 {
+		t.Fatalf("expected message_reference id 99")
+	}
+	if msg.ReferencedMessage == nil || msg.ReferencedMessage.Content != "original" {
+		t.Fatalf("expected referenced message content original")
+	}
+
+	mentions := AllowedMentions{
+		Parse: []string{"users"},
+		Roles: []Snowflake{555},
+	}
+	mData, err := json.Marshal(mentions)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+	var unmarshaled AllowedMentions
+	if err := json.Unmarshal(mData, &unmarshaled); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if len(unmarshaled.Parse) != 1 || len(unmarshaled.Roles) != 1 {
+		t.Fatalf("allowed mentions roundtrip mismatch")
+	}
+
+	if EventGuildMemberAdd != "GUILD_MEMBER_ADD" || EventTypingStart != "TYPING_START" {
+		t.Fatalf("expected event constants to be defined")
 	}
 }
