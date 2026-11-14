@@ -317,3 +317,31 @@ func TestClient_FilePayloadTooLarge(t *testing.T) {
 		t.Fatalf("expected ErrPayloadTooLarge, got %v", err)
 	}
 }
+
+func TestClientSendMessageRepliesAndMentions(t *testing.T) {
+	var captured map[string]any
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&captured)
+		_ = json.NewEncoder(w).Encode(types.Message{ID: 456})
+	}))
+	defer ts.Close()
+
+	client := NewClient("test-token", WithBaseURL(ts.URL))
+	refMsgID := types.Snowflake(789)
+	payload := MessagePayload{
+		Content: "reply",
+		AllowedMentions: types.AllowedMentions{
+			Parse: []string{"users"},
+		},
+		MessageReference: &types.MessageReference{
+			MessageID: &refMsgID,
+		},
+	}
+	_, err := client.SendMessage(context.Background(), types.Snowflake(123), payload)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if captured["message_reference"] == nil || captured["allowed_mentions"] == nil {
+		t.Fatalf("expected message_reference and allowed_mentions in request body: %v", captured)
+	}
+}
