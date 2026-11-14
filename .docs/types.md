@@ -147,17 +147,81 @@ Supporting media structures:
 - `types.UnfurledMedia`: Holds a media `URL` string.
 - `types.MediaGalleryItem`: Image item with `Media`, `Description`, and `Spoiler` flag.
 
+## Events
+
+Gateway event names defined in `types.EventName`:
+
+```go
+const (
+	EventReady                       EventName = "READY"
+	EventResumed                     EventName = "RESUMED"
+	EventMessageCreate               EventName = "MESSAGE_CREATE"
+	EventMessageUpdate               EventName = "MESSAGE_UPDATE"
+	EventMessageDelete               EventName = "MESSAGE_DELETE"
+	EventInteractionCreate           EventName = "INTERACTION_CREATE"
+	EventGuildCreate                 EventName = "GUILD_CREATE"
+	EventGuildUpdate                 EventName = "GUILD_UPDATE"
+	EventGuildDelete                 EventName = "GUILD_DELETE"
+	EventChannelCreate               EventName = "CHANNEL_CREATE"
+	EventChannelUpdate               EventName = "CHANNEL_UPDATE"
+	EventChannelDelete               EventName = "CHANNEL_DELETE"
+	EventVoiceStateUpdate            EventName = "VOICE_STATE_UPDATE"
+	EventAutoModerationRuleCreate    EventName = "AUTO_MODERATION_RULE_CREATE"
+	EventAutoModerationRuleUpdate    EventName = "AUTO_MODERATION_RULE_UPDATE"
+	EventAutoModerationRuleDelete    EventName = "AUTO_MODERATION_RULE_DELETE"
+	EventAutoModerationActionExecute EventName = "AUTO_MODERATION_ACTION_EXECUTION"
+	EventGuildMemberAdd              EventName = "GUILD_MEMBER_ADD"
+	EventGuildMemberUpdate           EventName = "GUILD_MEMBER_UPDATE"
+	EventGuildMemberRemove           EventName = "GUILD_MEMBER_REMOVE"
+	EventGuildBanAdd                 EventName = "GUILD_BAN_ADD"
+	EventGuildBanRemove              EventName = "GUILD_BAN_REMOVE"
+	EventMessageReactionAdd          EventName = "MESSAGE_REACTION_ADD"
+	EventMessageReactionRemove       EventName = "MESSAGE_REACTION_REMOVE"
+	EventMessageReactionRemoveAll    EventName = "MESSAGE_REACTION_REMOVE_ALL"
+	EventTypingStart                 EventName = "TYPING_START"
+	EventUserUpdate                  EventName = "USER_UPDATE"
+)
+```
+
 ## Models
 
 Primary Discord data models in `gda/types`:
 
-- `types.Message`: Full message object (author, content, channel, embeds, components).
+- `types.Message`: Full message object (author, content, channel, embeds, components, message reference, and replies).
+- `types.MessageReference`: Cross-message reference object linking reply headers (`MessageID`, `ChannelID`, `GuildID`, `FailIfNotExists`).
+- `types.AllowedMentions`: Structured mention whitelist (`Parse`, `Roles`, `Users`, `RepliedUser`).
+- `types.Attachment`: Uploaded file attachment metadata (`ID`, `Filename`, `Size`, `URL`, `ProxyURL`, `ContentType`, `Flags`).
+- `types.File`: Outbound file payload (`Name`, `Reader`, `ContentType`) for multipart message attachments.
+- `types.Choice`: Slash command autocomplete suggestion choice (`Name`, `Value`, `NameLocalizations`).
 - `types.Channel`: Guild text, voice, category, or DM channels.
 - `types.Guild`: Discord guild with member count, roles, and settings.
 - `types.Member`: Guild member with nickname, roles, joined timestamp, and permissions.
 - `types.User`: Discord user account (username, discriminator, avatar, bot flag).
 - `types.Role`: Guild role with color, hoist, position, and permission bitmask.
 - `types.Interaction`: Inbound slash command, component click, or modal submission payload.
+
+## Status & Activities
+
+Gateway presence status strings and activity type flags:
+
+```go
+const (
+	StatusOnline    StatusType = "online"
+	StatusDND       StatusType = "dnd"
+	StatusIdle      StatusType = "idle"
+	StatusInvisible StatusType = "invisible"
+	StatusOffline   StatusType = "offline"
+)
+
+const (
+	ActivityTypeGame      ActivityType = 0
+	ActivityTypeStreaming ActivityType = 1
+	ActivityTypeListening ActivityType = 2
+	ActivityTypeWatching  ActivityType = 3
+	ActivityTypeCustom    ActivityType = 4
+	ActivityTypeCompeting ActivityType = 5
+)
+```
 
 ### Avatar URLs
 
