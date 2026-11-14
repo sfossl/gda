@@ -42,3 +42,17 @@ type PermissionOverwrite struct {
 	Allow Permission `json:"allow"`
 	Deny  Permission `json:"deny"`
 }
+
+type MessageReference struct {
+	MessageID       *Snowflake `json:"message_id,omitempty"`
+	ChannelID       *Snowflake `json:"channel_id,omitempty"`
+	GuildID         *Snowflake `json:"guild_id,omitempty"`
+	FailIfNotExists *bool      `json:"fail_if_not_exists,omitempty"`
+}
+
+type AllowedMentions struct {
+	Parse       []string    `json:"parse,omitempty"`
+	Roles       []Snowflake `json:"roles,omitempty"`
+	Users       []Snowflake `json:"users,omitempty"`
+	RepliedUser *bool       `json:"replied_user,omitempty"`
+}
