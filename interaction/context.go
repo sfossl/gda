@@ -22,6 +22,7 @@ type Response struct {
 	Embeds     []types.Embed
 	Components []types.Component
 	Ephemeral  bool
+	Flags      types.MessageFlag
 	TTS        bool
 }
 
@@ -131,7 +132,7 @@ func (c *Context) DeferUpdate() error {
 }
 
 func (c *Context) Reply(res Response) error {
-	flags := ephemeralFlag(res.Ephemeral)
+	flags := res.Flags | ephemeralFlag(res.Ephemeral)
 
 	if c.deferred.Load() {
 		if c.restClient == nil {
@@ -177,7 +178,7 @@ func (c *Context) Reply(res Response) error {
 }
 
 func (c *Context) UpdateOriginal(res Response) error {
-	flags := ephemeralFlag(res.Ephemeral)
+	flags := res.Flags | ephemeralFlag(res.Ephemeral)
 
 	if c.deferred.Load() {
 		if c.restClient == nil {
@@ -355,7 +356,7 @@ func (c *Context) Followup(res Response) (*types.Message, error) {
 		Content:    res.Content,
 		Embeds:     res.Embeds,
 		Components: res.Components,
-		Flags:      ephemeralFlag(res.Ephemeral),
+		Flags:      res.Flags | ephemeralFlag(res.Ephemeral),
 		TTS:        res.TTS,
 	})
 }

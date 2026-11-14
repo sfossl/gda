@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.0 (2026-11-14)
+
+- Add cross-message reply support via `types.MessageReference` (`MessageID`, `ChannelID`, `GuildID`, `FailIfNotExists`).
+- Add structured mention whitelisting via `types.AllowedMentions` (`Parse`, `Roles`, `Users`, `RepliedUser`).
+- Add `MessageReference` and `AllowedMentions` fields to `rest.MessagePayload`.
+- Add `Type`, `MessageReference`, `ReferencedMessage`, and `Thread` fields to `types.Message`.
+- Add `Flags` field to `types.Attachment`.
+- Add 10 Gateway event name constants (`EventAutoModerationRuleCreate`, `EventAutoModerationRuleUpdate`, `EventAutoModerationRuleDelete`, `EventAutoModerationActionExecute`, `EventGuildBanAdd`, `EventGuildBanRemove`, `EventMessageReactionRemoveAll`, `EventTypingStart`, `EventUserUpdate`).
+- Add comprehensive documentation for payload types, presence status, activities, and package-qualified errors.
+
 ## v0.1.1 (2026-11-02)
 
 - Add user and guild member avatar URL helpers (`AvatarURL`, `AvatarOptions`).

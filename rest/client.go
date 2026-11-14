@@ -102,12 +102,14 @@ type Request struct {
 }
 
 type MessagePayload struct {
-	Content    string            `json:"content,omitempty"`
-	Embeds     []types.Embed     `json:"embeds,omitempty"`
-	Components []types.Component `json:"components,omitempty"`
-	Flags      types.MessageFlag `json:"flags,omitempty"`
-	TTS        bool              `json:"tts,omitempty"`
-	Files      []types.File      `json:"-"`
+	Content          string                  `json:"content,omitempty"`
+	Embeds           []types.Embed           `json:"embeds,omitempty"`
+	Components       []types.Component       `json:"components,omitempty"`
+	Flags            types.MessageFlag       `json:"flags,omitempty"`
+	TTS              bool                    `json:"tts,omitempty"`
+	Files            []types.File            `json:"-"`
+	AllowedMentions  any                     `json:"allowed_mentions,omitempty"`
+	MessageReference *types.MessageReference `json:"message_reference,omitempty"`
 }
 
 func (c *Client) Do(ctx context.Context, req Request) ([]byte, error) {

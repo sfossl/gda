@@ -17,6 +17,8 @@ var (
 	ErrButtonLabelTooLong         = errors.New("button label exceeds 80 characters")
 	ErrButtonURLRequired          = errors.New("url is required for link button")
 	ErrButtonURLNotAllowed        = errors.New("url is not allowed on non-link button")
+	ErrButtonSKUIDRequired        = errors.New("sku_id is required for premium button")
+	ErrButtonPremiumNotAllowed    = errors.New("custom_id, url and label are not allowed on premium button")
 	ErrSelectCustomIDRequired     = errors.New("select menu custom_id is required")
 	ErrSelectCustomIDTooLong      = errors.New("select menu custom_id exceeds 100 characters")
 	ErrSelectPlaceholderTooLong   = errors.New("select placeholder exceeds 150 characters")
@@ -33,6 +35,7 @@ const (
 	ButtonStyleSuccess   ButtonStyle = 3
 	ButtonStyleDanger    ButtonStyle = 4
 	ButtonStyleLink      ButtonStyle = 5
+	ButtonStylePremium   ButtonStyle = 6
 )
 
 type ButtonBuilder struct {
@@ -77,6 +80,11 @@ func (b *ButtonBuilder) SetURL(url string) *ButtonBuilder {
 	return b
 }
 
+func (b *ButtonBuilder) SetSKUID(skuID types.Snowflake) *ButtonBuilder {
+	b.comp.SKUID = &skuID
+	return b
+}
+
 func (b *ButtonBuilder) SetDisabled(disabled bool) *ButtonBuilder {
 	b.comp.Disabled = disabled
 	return b
@@ -103,6 +111,13 @@ func (b *ButtonBuilder) Build() (types.Component, error) {
 		}
 		if b.comp.CustomID != "" {
 			return types.Component{}, ErrButtonURLNotAllowed
+		}
+	case int(ButtonStylePremium):
+		if b.comp.SKUID == nil || *b.comp.SKUID == 0 {
+			return types.Component{}, ErrButtonSKUIDRequired
+		}
+		if b.comp.CustomID != "" || b.comp.URL != "" || b.comp.Label != "" {
+			return types.Component{}, ErrButtonPremiumNotAllowed
 		}
 	default:
 		if b.comp.CustomID == "" {

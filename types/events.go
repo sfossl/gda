@@ -25,6 +25,16 @@ const (
 	EventAutoModerationRuleUpdate    EventName = "AUTO_MODERATION_RULE_UPDATE"
 	EventAutoModerationRuleDelete    EventName = "AUTO_MODERATION_RULE_DELETE"
 	EventAutoModerationActionExecute EventName = "AUTO_MODERATION_ACTION_EXECUTION"
+	EventGuildMemberAdd              EventName = "GUILD_MEMBER_ADD"
+	EventGuildMemberUpdate           EventName = "GUILD_MEMBER_UPDATE"
+	EventGuildMemberRemove           EventName = "GUILD_MEMBER_REMOVE"
+	EventGuildBanAdd                 EventName = "GUILD_BAN_ADD"
+	EventGuildBanRemove              EventName = "GUILD_BAN_REMOVE"
+	EventMessageReactionAdd          EventName = "MESSAGE_REACTION_ADD"
+	EventMessageReactionRemove       EventName = "MESSAGE_REACTION_REMOVE"
+	EventMessageReactionRemoveAll    EventName = "MESSAGE_REACTION_REMOVE_ALL"
+	EventTypingStart                 EventName = "TYPING_START"
+	EventUserUpdate                  EventName = "USER_UPDATE"
 )
 
 type GatewayPayload struct {
@@ -113,22 +123,26 @@ type Channel struct {
 }
 
 type Message struct {
-	ID              Snowflake        `json:"id"`
-	ChannelID       Snowflake        `json:"channel_id"`
-	GuildID         *Snowflake       `json:"guild_id,omitempty"`
-	Author          User             `json:"author"`
-	Member          *Member          `json:"member,omitempty"`
-	Content         string           `json:"content"`
-	Timestamp       time.Time        `json:"timestamp"`
-	EditedTimestamp *time.Time       `json:"edited_timestamp,omitempty"`
-	TTS             bool             `json:"tts"`
-	MentionEveryone bool             `json:"mention_everyone"`
-	Mentions        []User           `json:"mentions"`
-	Embeds          []Embed          `json:"embeds"`
-	Attachments     []Attachment     `json:"attachments"`
-	Components      []Component      `json:"components"`
-	Flags           MessageFlag      `json:"flags,omitempty"`
-	Interaction     *MessageInteract `json:"interaction,omitempty"`
+	ID                Snowflake         `json:"id"`
+	ChannelID         Snowflake         `json:"channel_id"`
+	GuildID           *Snowflake        `json:"guild_id,omitempty"`
+	Author            User              `json:"author"`
+	Member            *Member           `json:"member,omitempty"`
+	Content           string            `json:"content"`
+	Timestamp         time.Time         `json:"timestamp"`
+	EditedTimestamp   *time.Time        `json:"edited_timestamp,omitempty"`
+	TTS               bool              `json:"tts"`
+	MentionEveryone   bool              `json:"mention_everyone"`
+	Mentions          []User            `json:"mentions"`
+	Embeds            []Embed           `json:"embeds"`
+	Attachments       []Attachment      `json:"attachments"`
+	Components        []Component       `json:"components"`
+	Flags             MessageFlag       `json:"flags,omitempty"`
+	Interaction       *MessageInteract  `json:"interaction,omitempty"`
+	Type              int               `json:"type"`
+	MessageReference  *MessageReference `json:"message_reference,omitempty"`
+	ReferencedMessage *Message          `json:"referenced_message,omitempty"`
+	Thread            *Channel          `json:"thread,omitempty"`
 }
 
 type MessageInteract struct {
@@ -146,6 +160,7 @@ type Attachment struct {
 	Size        int       `json:"size"`
 	URL         string    `json:"url"`
 	ProxyURL    string    `json:"proxy_url"`
+	Flags       *int      `json:"flags,omitempty"`
 }
 
 type Embed struct {
@@ -199,26 +214,64 @@ const (
 	ComponentTypeRoleSelect        ComponentType = 6
 	ComponentTypeMentionableSelect ComponentType = 7
 	ComponentTypeChannelSelect     ComponentType = 8
+	ComponentTypeSection           ComponentType = 9
+	ComponentTypeTextDisplay       ComponentType = 10
+	ComponentTypeThumbnail         ComponentType = 11
+	ComponentTypeMediaGallery      ComponentType = 12
+	ComponentTypeFile              ComponentType = 13
+	ComponentTypeSeparator         ComponentType = 14
+	ComponentTypeContainer         ComponentType = 17
 )
 
+type SeparatorSpacing int
+
+const (
+	SeparatorSpacingSmall SeparatorSpacing = 1
+	SeparatorSpacingLarge SeparatorSpacing = 2
+)
+
+type UnfurledMedia struct {
+	URL string `json:"url"`
+}
+
+type MediaGalleryItem struct {
+	Media       UnfurledMedia `json:"media"`
+	Description string        `json:"description,omitempty"`
+	Spoiler     bool          `json:"spoiler,omitempty"`
+}
+
 type Component struct {
-	Type         ComponentType   `json:"type"`
-	CustomID     string          `json:"custom_id,omitempty"`
-	Disabled     bool            `json:"disabled,omitempty"`
-	Style        int             `json:"style,omitempty"`
-	Label        string          `json:"label,omitempty"`
-	Emoji        *ComponentEmoji `json:"emoji,omitempty"`
-	URL          string          `json:"url,omitempty"`
-	Options      []SelectOption  `json:"options,omitempty"`
-	Placeholder  string          `json:"placeholder,omitempty"`
-	MinValues    *int            `json:"min_values,omitempty"`
-	MaxValues    *int            `json:"max_values,omitempty"`
-	Value        string          `json:"value,omitempty"`
-	MinLength    *int            `json:"min_length,omitempty"`
-	MaxLength    *int            `json:"max_length,omitempty"`
-	Required     *bool           `json:"required,omitempty"`
-	ChannelTypes []int           `json:"channel_types,omitempty"`
-	Components   []Component     `json:"components,omitempty"`
+	Type         ComponentType      `json:"type"`
+	ID           *int               `json:"id,omitempty"`
+	CustomID     string             `json:"custom_id,omitempty"`
+	Disabled     bool               `json:"disabled,omitempty"`
+	Style        int                `json:"style,omitempty"`
+	Label        string             `json:"label,omitempty"`
+	Emoji        *ComponentEmoji    `json:"emoji,omitempty"`
+	URL          string             `json:"url,omitempty"`
+	Options      []SelectOption     `json:"options,omitempty"`
+	Placeholder  string             `json:"placeholder,omitempty"`
+	MinValues    *int               `json:"min_values,omitempty"`
+	MaxValues    *int               `json:"max_values,omitempty"`
+	Value        string             `json:"value,omitempty"`
+	MinLength    *int               `json:"min_length,omitempty"`
+	MaxLength    *int               `json:"max_length,omitempty"`
+	Required     *bool              `json:"required,omitempty"`
+	ChannelTypes []int              `json:"channel_types,omitempty"`
+	SKUID        *Snowflake         `json:"sku_id,omitempty"`
+	Content      string             `json:"content,omitempty"`
+	Accessory    *Component         `json:"accessory,omitempty"`
+	Divider      *bool              `json:"divider,omitempty"`
+	Spacing      *int               `json:"spacing,omitempty"`
+	AccentColor  *int               `json:"accent_color,omitempty"`
+	Spoiler      *bool              `json:"spoiler,omitempty"`
+	Items        []MediaGalleryItem `json:"items,omitempty"`
+	Media        *UnfurledMedia     `json:"media,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	File         *UnfurledMedia     `json:"file,omitempty"`
+	Name         string             `json:"name,omitempty"`
+	Size         *int               `json:"size,omitempty"`
+	Components   []Component        `json:"components,omitempty"`
 }
 
 type ComponentEmoji struct {
@@ -355,6 +408,7 @@ const (
 	MessageFlagFailedToMentionSomeRolesInThread MessageFlag = 1 << 8
 	MessageFlagSuppressNotifications            MessageFlag = 1 << 12
 	MessageFlagIsVoiceMessage                   MessageFlag = 1 << 13
+	MessageFlagIsComponentsV2                   MessageFlag = 1 << 15
 )
 
 type InteractionResponse struct {

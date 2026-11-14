@@ -47,8 +47,14 @@ linkBtn, err := builder.NewButton().
 	SetLabel("website").
 	Build()
 
+// premium purchase button
+premiumBtn, err := builder.NewButton().
+	SetStyle(builder.ButtonStylePremium).
+	SetSKUID(skuID).
+	Build()
+
 // action row container (up to 5 buttons per row)
-row, err := builder.NewActionRow(btn, linkBtn)
+row, err := builder.NewActionRow(btn, linkBtn, premiumBtn)
 ```
 
 Button styles:
@@ -57,6 +63,13 @@ Button styles:
 - `ButtonStyleSuccess` (Green)
 - `ButtonStyleDanger` (Red)
 - `ButtonStyleLink` (Grey with external URL icon)
+- `ButtonStylePremium` (Discord monetization SKU button)
+
+Constraints:
+- Premium Button: Requires `SetSKUID(...)`. Forbids `CustomID`, `URL`, and `Label`.
+
+> [!NOTE]
+> `gda/builder` provides V1 interactive component builders. Modern Components V2 layout builders (`Container`, `Section`, `Text`, `Separator`) live in `gdk` to keep `gda` lightweight.
 
 ## Selects
 

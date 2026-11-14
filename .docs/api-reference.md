@@ -72,6 +72,60 @@ func (d *EventDispatcher) Dispatch(ctx context.Context, event types.EventName, d
 
 ### `rest.Client` Methods
 ```go
+type MessagePayload struct {
+	Content          string
+	Embeds           []types.Embed
+	Components       []types.Component
+	Flags            types.MessageFlag
+	TTS              bool
+	Files            []types.File
+	AllowedMentions  any
+	MessageReference *types.MessageReference
+}
+
+type CreateChannelPayload struct {
+	Name                 string
+	Type                 int
+	Topic                string
+	Bitrate              int
+	UserLimit            int
+	RateLimitPerUser     *int
+	ParentID             *types.Snowflake
+	NSFW                 bool
+	Position             *int
+	PermissionOverwrites []types.PermissionOverwrite
+}
+
+type ModifyChannelPayload struct {
+	Name                 *string
+	Type                 *int
+	Position             *int
+	Topic                *string
+	NSFW                 *bool
+	Bitrate              *int
+	UserLimit            *int
+	RateLimitPerUser     *int
+	ParentID             *types.Snowflake
+	PermissionOverwrites []types.PermissionOverwrite
+}
+
+type ModifyMemberPayload struct {
+	Nick                       *string
+	Roles                      *[]types.Snowflake
+	Mute                       *bool
+	Deaf                       *bool
+	ChannelID                  *types.Snowflake
+	CommunicationDisabledUntil *time.Time
+}
+
+type RolePayload struct {
+	Name        *string
+	Permissions *types.Permission
+	Color       *int
+	Hoist       *bool
+	Mentionable *bool
+}
+
 // execution
 func (c *Client) Do(ctx context.Context, req Request) ([]byte, error)
 func (c *Client) CloseIdleConnections()
@@ -147,6 +201,15 @@ func (r *Router) WebhookHandler(restClient *rest.Client, autoDefer ...bool) http
 
 ### `interaction.Context`
 ```go
+type Response struct {
+	Content    string
+	Embeds     []types.Embed
+	Components []types.Component
+	Ephemeral  bool
+	Flags      types.MessageFlag
+	TTS        bool
+}
+
 func NewContext(ctx context.Context, in *types.Interaction, restClient *rest.Client) *Context
 func NewGatewayContext(ctx context.Context, in *types.Interaction, restClient *rest.Client) *Context
 func (c *Context) Context() context.Context
@@ -204,11 +267,23 @@ func (b *EmbedBuilder) Build() (types.Embed, error)
 
 ### `ButtonBuilder` and `ActionRow`
 ```go
+type ButtonStyle int
+
+const (
+	ButtonStylePrimary   ButtonStyle = 1
+	ButtonStyleSecondary ButtonStyle = 2
+	ButtonStyleSuccess   ButtonStyle = 3
+	ButtonStyleDanger    ButtonStyle = 4
+	ButtonStyleLink      ButtonStyle = 5
+	ButtonStylePremium   ButtonStyle = 6
+)
+
 func NewButton() *ButtonBuilder
 func (b *ButtonBuilder) SetStyle(style ButtonStyle) *ButtonBuilder
 func (b *ButtonBuilder) SetCustomID(customID string) *ButtonBuilder
 func (b *ButtonBuilder) SetLabel(label string) *ButtonBuilder
 func (b *ButtonBuilder) SetURL(url string) *ButtonBuilder
+func (b *ButtonBuilder) SetSKUID(skuID types.Snowflake) *ButtonBuilder
 func (b *ButtonBuilder) SetDisabled(disabled bool) *ButtonBuilder
 func (b *ButtonBuilder) SetEmoji(name string, id *types.Snowflake, animated bool) *ButtonBuilder
 func (b *ButtonBuilder) Build() (types.Component, error)
@@ -232,6 +307,13 @@ func (b *SelectMenuBuilder) Build() (types.Component, error)
 
 ### `ModalBuilder` and `TextInputBuilder`
 ```go
+type TextInputStyle int
+
+const (
+	TextInputStyleShort     TextInputStyle = 1
+	TextInputStyleParagraph TextInputStyle = 2
+)
+
 func NewTextInput(customID, label string, style TextInputStyle) *TextInputBuilder
 func (b *TextInputBuilder) SetPlaceholder(placeholder string) *TextInputBuilder
 func (b *TextInputBuilder) SetValue(value string) *TextInputBuilder
@@ -256,20 +338,166 @@ func (u *User) AvatarURL(args ...any) string
 func (m *Member) AvatarURL(args ...any) string
 ```
 
+## Types & Constants
+
+```go
+type ComponentType int
+
+const (
+	ComponentTypeActionRow         ComponentType = 1
+	ComponentTypeButton            ComponentType = 2
+	ComponentTypeStringSelect      ComponentType = 3
+	ComponentTypeTextInput         ComponentType = 4
+	ComponentTypeUserSelect        ComponentType = 5
+	ComponentTypeRoleSelect        ComponentType = 6
+	ComponentTypeMentionableSelect ComponentType = 7
+	ComponentTypeChannelSelect     ComponentType = 8
+	ComponentTypeSection           ComponentType = 9
+	ComponentTypeTextDisplay       ComponentType = 10
+	ComponentTypeThumbnail         ComponentType = 11
+	ComponentTypeMediaGallery      ComponentType = 12
+	ComponentTypeFile              ComponentType = 13
+	ComponentTypeSeparator         ComponentType = 14
+	ComponentTypeContainer         ComponentType = 17
+)
+
+type MessageFlag uint64
+
+const (
+	MessageFlagCrossposted                      MessageFlag = 1 << 0
+	MessageFlagIsCrosspost                      MessageFlag = 1 << 1
+	MessageFlagSuppressEmbeds                   MessageFlag = 1 << 2
+	MessageFlagSourceMessageDeleted             MessageFlag = 1 << 3
+	MessageFlagUrgent                           MessageFlag = 1 << 4
+	MessageFlagHasThread                        MessageFlag = 1 << 5
+	MessageFlagEphemeral                        MessageFlag = 1 << 6
+	MessageFlagLoading                          MessageFlag = 1 << 7
+	MessageFlagFailedToMentionSomeRolesInThread MessageFlag = 1 << 8
+	MessageFlagSuppressNotifications            MessageFlag = 1 << 12
+	MessageFlagIsVoiceMessage                   MessageFlag = 1 << 13
+	MessageFlagIsComponentsV2                   MessageFlag = 1 << 15
+)
+
+type EventName string
+
+const (
+	EventReady                       EventName = "READY"
+	EventResumed                     EventName = "RESUMED"
+	EventMessageCreate               EventName = "MESSAGE_CREATE"
+	EventMessageUpdate               EventName = "MESSAGE_UPDATE"
+	EventMessageDelete               EventName = "MESSAGE_DELETE"
+	EventInteractionCreate           EventName = "INTERACTION_CREATE"
+	EventGuildCreate                 EventName = "GUILD_CREATE"
+	EventGuildUpdate                 EventName = "GUILD_UPDATE"
+	EventGuildDelete                 EventName = "GUILD_DELETE"
+	EventChannelCreate               EventName = "CHANNEL_CREATE"
+	EventChannelUpdate               EventName = "CHANNEL_UPDATE"
+	EventChannelDelete               EventName = "CHANNEL_DELETE"
+	EventVoiceStateUpdate            EventName = "VOICE_STATE_UPDATE"
+	EventAutoModerationRuleCreate    EventName = "AUTO_MODERATION_RULE_CREATE"
+	EventAutoModerationRuleUpdate    EventName = "AUTO_MODERATION_RULE_UPDATE"
+	EventAutoModerationRuleDelete    EventName = "AUTO_MODERATION_RULE_DELETE"
+	EventAutoModerationActionExecute EventName = "AUTO_MODERATION_ACTION_EXECUTION"
+	EventGuildMemberAdd              EventName = "GUILD_MEMBER_ADD"
+	EventGuildMemberUpdate           EventName = "GUILD_MEMBER_UPDATE"
+	EventGuildMemberRemove           EventName = "GUILD_MEMBER_REMOVE"
+	EventGuildBanAdd                 EventName = "GUILD_BAN_ADD"
+	EventGuildBanRemove              EventName = "GUILD_BAN_REMOVE"
+	EventMessageReactionAdd          EventName = "MESSAGE_REACTION_ADD"
+	EventMessageReactionRemove       EventName = "MESSAGE_REACTION_REMOVE"
+	EventMessageReactionRemoveAll    EventName = "MESSAGE_REACTION_REMOVE_ALL"
+	EventTypingStart                 EventName = "TYPING_START"
+	EventUserUpdate                  EventName = "USER_UPDATE"
+)
+
+type MessageReference struct {
+	MessageID       *Snowflake `json:"message_id,omitempty"`
+	ChannelID       *Snowflake `json:"channel_id,omitempty"`
+	GuildID         *Snowflake `json:"guild_id,omitempty"`
+	FailIfNotExists *bool      `json:"fail_if_not_exists,omitempty"`
+}
+
+type AllowedMentions struct {
+	Parse       []string    `json:"parse,omitempty"`
+	Roles       []Snowflake `json:"roles,omitempty"`
+	Users       []Snowflake `json:"users,omitempty"`
+	RepliedUser *bool       `json:"replied_user,omitempty"`
+}
+
+type Attachment struct {
+	ID          Snowflake `json:"id"`
+	Filename    string    `json:"filename"`
+	Description *string   `json:"description,omitempty"`
+	ContentType *string   `json:"content_type,omitempty"`
+	Size        int       `json:"size"`
+	URL         string    `json:"url"`
+	ProxyURL    string    `json:"proxy_url"`
+	Height      *int      `json:"height,omitempty"`
+	Width       *int      `json:"width,omitempty"`
+	Ephemeral   bool      `json:"ephemeral,omitempty"`
+	Flags       *int      `json:"flags,omitempty"`
+}
+
+type File struct {
+	Name        string
+	Reader      io.Reader
+	ContentType string
+}
+
+type Choice struct {
+	Name              string            `json:"name"`
+	NameLocalizations map[string]string `json:"name_localizations,omitempty"`
+	Value             any               `json:"value"`
+}
+
+type PermissionOverwrite struct {
+	ID    Snowflake  `json:"id"`
+	Type  int        `json:"type"`
+	Allow Permission `json:"allow,string"`
+	Deny  Permission `json:"deny,string"`
+}
+
+type StatusType string
+
+const (
+	StatusOnline    StatusType = "online"
+	StatusDND       StatusType = "dnd"
+	StatusIdle      StatusType = "idle"
+	StatusInvisible StatusType = "invisible"
+	StatusOffline   StatusType = "offline"
+)
+
+type ActivityType int
+
+const (
+	ActivityTypeGame      ActivityType = 0
+	ActivityTypeStreaming ActivityType = 1
+	ActivityTypeListening ActivityType = 2
+	ActivityTypeWatching  ActivityType = 3
+	ActivityTypeCustom    ActivityType = 4
+	ActivityTypeCompeting ActivityType = 5
+)
+
+const Version = "0.2.0"
+```
+
 ## Errors
 
 ```go
+// package rest
 func IsNotFound(err error) bool
 func IsRateLimited(err error) bool
 func IsUnauthorized(err error) bool
 func IsForbidden(err error) bool
 func HasErrorCode(err error, code int) bool
 
-// Sentinel errors
+// package gda
 var ErrMissingToken error
 var ErrInvalidShard error
 var ErrMissingMessageIntent error
 var ErrMissingPublicKey error
+
+// package interaction
 var ErrPayloadTooLarge error
 var ErrAlreadyResponded error
 var ErrModalAfterDefer error

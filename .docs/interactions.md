@@ -107,6 +107,12 @@ err := ctx.Reply(interaction.Response{
 	Ephemeral: true,
 })
 
+// response using components v2
+err = ctx.Reply(interaction.Response{
+	Flags:      types.MessageFlagIsComponentsV2,
+	Components: []types.Component{container},
+})
+
 // defer response (gives up to 15 minutes to edit via REST)
 err = ctx.Defer(false)
 

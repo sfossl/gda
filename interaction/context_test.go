@@ -44,6 +44,32 @@ func TestContextReply(t *testing.T) {
 	}
 }
 
+func TestContextReplyWithFlags(t *testing.T) {
+	in := &types.Interaction{
+		ID:    types.Snowflake(100),
+		Token: "tok",
+	}
+	ctx := NewContext(context.Background(), in, nil)
+
+	err := ctx.Reply(Response{
+		Ephemeral: true,
+		Flags:     types.MessageFlagIsComponentsV2,
+	})
+	if err != nil {
+		t.Fatalf("unexpected reply error: %v", err)
+	}
+
+	select {
+	case res := <-ctx.ResponseChannel():
+		expected := types.MessageFlagEphemeral | types.MessageFlagIsComponentsV2
+		if res.Data.Flags != expected {
+			t.Fatalf("expected flags %d, got %d", expected, res.Data.Flags)
+		}
+	default:
+		t.Fatalf("expected response in channel")
+	}
+}
+
 func TestContextDefer(t *testing.T) {
 	in := &types.Interaction{
 		ID:    types.Snowflake(101),
